@@ -602,84 +602,114 @@ working**, and **canonical companions** (skills that compose well).
 These are the canonical bundles for the agents in `crews/dev_team.py` and
 `crews/code_review.py`. Treat them as defaults; tune per project.
 
+Every recipe below uses `with_defaults` so `using-skills-effectively`
+and `handling-uncertainty` load automatically — only the role-specific
+skills are listed.
+
 ```python
-from skills import inject
+from skills import with_defaults
 
 # ---- Planning roles --------------------------------------------------
-inject(product_planner,
-       "brainstorming", "writing-plans", "handling-uncertainty",
-       "using-skills-effectively")
+with_defaults(product_planner,
+              "brainstorming", "writing-plans")
 
-inject(architect,
-       "writing-plans", "architecture-decision-record",
-       "subagent-driven-development", "dispatching-parallel-agents",
-       "using-skills-effectively")
+with_defaults(architect,
+              "writing-plans", "architecture-decision-record",
+              "subagent-driven-development")
 
 # ---- Implementer roles -----------------------------------------------
-inject(backend_dev,
-       "test-driven-development", "writing-tests", "avoiding-mocks",
-       "yagni", "making-changes-incrementally",
-       "commit-discipline", "explaining-changes",
-       "reading-code", "code-search",
-       "handling-uncertainty")
+with_defaults(backend_dev,
+              "test-driven-development", "yagni", "commit-discipline")
 
-inject(frontend_dev,
-       "frontend-design",
-       "test-driven-development", "writing-tests", "avoiding-flaky-tests",
-       "yagni", "commit-discipline", "explaining-changes",
-       "reading-code", "handling-uncertainty")
+with_defaults(frontend_dev,
+              "frontend-design", "yagni", "commit-discipline")
 
 # ---- Review roles ----------------------------------------------------
-inject(bug_hunter,
-       "systematic-debugging", "root-cause-tracing",
-       "pr-review", "code-search")
+with_defaults(bug_hunter,
+              "systematic-debugging", "root-cause-tracing", "code-search")
 
-inject(security_reviewer,
-       "security-review", "pr-review",
-       "defensive-programming-discipline")
+with_defaults(security_reviewer,
+              "security-review", "pr-review",
+              "defensive-programming-discipline")
 
-inject(perf_reviewer,
-       "pr-review", "systematic-debugging", "code-search")
+with_defaults(perf_reviewer,
+              "pr-review", "systematic-debugging", "code-search")
 
-inject(qa_engineer,
-       "writing-tests", "avoiding-mocks", "avoiding-flaky-tests",
-       "test-driven-development")
+with_defaults(qa_engineer,
+              "writing-tests", "avoiding-mocks", "avoiding-flaky-tests")
 
 # ---- Process roles ---------------------------------------------------
-inject(release_manager,
-       "writing-plans", "incident-response", "dependency-hygiene",
-       "explaining-changes", "handling-failures-and-retries")
+with_defaults(release_manager,
+              "writing-plans", "incident-response", "explaining-changes")
 
-inject(doc_writer,
-       "explaining-changes", "architecture-decision-record",
-       "reading-code")
+with_defaults(doc_writer,
+              "explaining-changes", "architecture-decision-record",
+              "reading-code")
 
 # ---- Exec review (Stack-equivalent) ----------------------------------
-inject(ceo,         "writing-plans", "yagni", "handling-uncertainty")
-inject(eng_lead,    "writing-plans", "architecture-decision-record",
-                    "yagni", "making-changes-incrementally")
-inject(design_lead, "frontend-design")
-inject(qa_lead,     "writing-tests", "avoiding-flaky-tests",
-                    "incident-response")
-inject(release_mgr, "incident-response", "handling-failures-and-retries",
-                    "dependency-hygiene", "explaining-changes")
+with_defaults(ceo,         "writing-plans", "yagni")
+with_defaults(eng_lead,    "writing-plans", "architecture-decision-record",
+                           "yagni")
+with_defaults(design_lead, "frontend-design")
+with_defaults(qa_lead,     "writing-tests", "avoiding-flaky-tests",
+                           "incident-response")
+with_defaults(release_mgr, "incident-response", "handling-failures-and-retries",
+                           "explaining-changes")
 ```
 
 ### 4.1 Heuristics for assembling a bundle
 
 1. **Cap at five skills per agent.** Past that, behavior diverges and
-   prompt budget hurts.
-2. **Always include `using-skills-effectively`** for any agent loading
-   ≥ 3 skills.
-3. **Always include `handling-uncertainty`** for any agent that takes
-   open-ended user input.
-4. **Pair every "planner" with `writing-plans`** and every "executor"
+   prompt budget hurts. The two default-thinking skills (§4.2) count
+   toward this cap, so role-specific skills get the remaining three.
+2. **Pair every "planner" with `writing-plans`** and every "executor"
    with `executing-plans` on the receiving end.
-5. **Don't mix `defensive-programming-discipline` with `security-review`
+3. **Don't mix `defensive-programming-discipline` with `security-review`
    on the same agent.** They pull in opposite directions; route them to
    different agents.
-6. **Don't load `incident-response` outside incident roles.** It adds
+4. **Don't load `incident-response` outside incident roles.** It adds
    ceremony that doesn't fit normal workflows.
+
+### 4.2 Default thinking baseline
+
+Every workflow agent in `crews/*.py` is constructed with
+`with_defaults(Agent(...), *role_skills)` rather than the bare
+`inject(...)`. The helper unconditionally prepends two skills to every
+agent's backstory:
+
+| Default skill | Why it's a default |
+|---|---|
+| `using-skills-effectively` | Meta-skill: agents that load other skills should know how to compose them. Detects conflicts, caps load count, logs which skill helped. |
+| `handling-uncertainty` | Anti-fabrication: every agent that touches input must surface confidence and avoid inventing facts. The single highest-leverage skill. |
+
+These two were chosen by failure-mode coverage rather than scope. Every
+multi-skill agent risks poor composition (covered by
+`using-skills-effectively`). Every agent that takes input risks silent
+fabrication (covered by `handling-uncertainty`). The other 30 skills are
+role-specific.
+
+**Why enforce defaults rather than rely on convention?** The helper
+removes a class of forget-to-load bugs and centralizes the policy: when
+the baseline changes (e.g., adding `commit-discipline` if every agent
+starts producing commits), it's one edit in `skills/defaults.py`, not 30
+edits across crews. The convention is enforced statically by
+`tests/test_default_thinking.py`:
+
+- `test_with_defaults_prepends_base_skills` — `with_defaults` actually
+  loads the baseline before role skills.
+- `test_crew_imports_with_defaults` — every file under `crews/`
+  imports the helper.
+- `test_crew_does_not_use_bare_inject` — no `inject(Agent(...))` call
+  forms allowed inside a crew (they'd skip the baseline).
+- `test_every_agent_in_crew_is_wrapped` — every `Agent(...)` constructor
+  is wrapped, by count match between `Agent(` and `with_defaults(`.
+
+**Changing the baseline.** Edit `BASE_THINKING_SKILLS` in
+`skills/defaults.py` and re-run `pytest tests/`. The tests will fail if
+the new baseline isn't reachable through `with_defaults` from every
+agent. Bumping the baseline is intentionally easy *and* loud — easy so
+the team can iterate on what's universal, loud so a baseline change is
+visible in every PR that touches it.
 
 ---
 

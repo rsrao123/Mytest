@@ -9,7 +9,7 @@ from langchain_openai import ChatOpenAI
 
 # skills/loader.py lives in a sibling directory — make it importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from skills.loader import inject  # noqa: E402
+from skills import with_defaults  # noqa: E402
 
 llm = ChatOpenAI(
     base_url="http://localhost:8001/v1",
@@ -37,7 +37,7 @@ git_tool = GitTool()
 
 # ---- Four reviewers, run in parallel ----
 
-claude_md_compliance = inject(
+claude_md_compliance = with_defaults(
     Agent(
         role="Project Conventions Compliance Checker",
         goal="Verify the diff follows CONVENTIONS.md / CLAUDE.md / project rules.",
@@ -50,7 +50,7 @@ claude_md_compliance = inject(
     "pr-review",
 )
 
-redundancy_checker = inject(
+redundancy_checker = with_defaults(
     Agent(
         role="Redundancy Detector",
         goal="Find duplicated logic, redundant rules, and dead code in the diff.",
@@ -63,7 +63,7 @@ redundancy_checker = inject(
     "refactoring",
 )
 
-bug_detector = inject(
+bug_detector = with_defaults(
     Agent(
         role="Bug Detector",
         goal="Find logic bugs, off-by-ones, race conditions, and unhandled errors.",
@@ -73,7 +73,7 @@ bug_detector = inject(
     "systematic-debugging",
 )
 
-git_history_reviewer = inject(
+git_history_reviewer = with_defaults(
     Agent(
         role="Git History Context Reviewer",
         goal="Use git log/blame to find why touched code was last changed and surface relevant prior context.",

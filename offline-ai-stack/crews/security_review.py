@@ -11,7 +11,7 @@ from crewai_tools import FileReadTool
 from langchain_openai import ChatOpenAI
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from skills.loader import inject  # noqa: E402
+from skills import with_defaults  # noqa: E402
 
 llm = ChatOpenAI(
     base_url="http://localhost:8001/v1",
@@ -20,7 +20,7 @@ llm = ChatOpenAI(
     temperature=0.0,
 )
 
-security_reviewer = inject(
+security_reviewer = with_defaults(
     Agent(
         role="Security Reviewer",
         goal=(
@@ -30,7 +30,7 @@ security_reviewer = inject(
         backstory="Treats every input as hostile until proven otherwise.",
         llm=llm, tools=[FileReadTool()], allow_delegation=False,
     ),
-    "security-review",
+    "security-review", "pr-review", "defensive-programming-discipline",
 )
 
 

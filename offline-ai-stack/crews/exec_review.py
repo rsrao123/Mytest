@@ -7,7 +7,7 @@ from crewai import Agent, Crew, Process, Task
 from langchain_openai import ChatOpenAI
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from skills.loader import inject  # noqa: E402
+from skills import with_defaults  # noqa: E402
 
 reasoner = ChatOpenAI(
     base_url="http://localhost:8000/v1",
@@ -16,7 +16,7 @@ reasoner = ChatOpenAI(
     temperature=0.4,
 )
 
-ceo = inject(
+ceo = with_defaults(
     Agent(
         role="CEO",
         goal=(
@@ -29,10 +29,10 @@ ceo = inject(
         ),
         llm=reasoner, allow_delegation=False,
     ),
-    "writing-plans",
+    "writing-plans", "yagni",
 )
 
-eng_lead = inject(
+eng_lead = with_defaults(
     Agent(
         role="Engineering Lead",
         goal="Assess feasibility, complexity, time-to-ship, and tech-debt impact.",
@@ -42,10 +42,10 @@ eng_lead = inject(
         ),
         llm=reasoner, allow_delegation=False,
     ),
-    "writing-plans", "architecture-decision-record",
+    "writing-plans", "architecture-decision-record", "yagni",
 )
 
-design_lead = inject(
+design_lead = with_defaults(
     Agent(
         role="Design Lead",
         goal="Assess UX coherence, user-flow completeness, and design-system consistency.",
@@ -55,18 +55,24 @@ design_lead = inject(
     "frontend-design",
 )
 
-qa_lead = Agent(
-    role="QA Lead",
-    goal="Identify high-risk regressions, untested branches, and rollback feasibility.",
-    backstory="Has seen which 'small changes' took prod down. Asks for a kill-switch on every launch.",
-    llm=reasoner, allow_delegation=False,
+qa_lead = with_defaults(
+    Agent(
+        role="QA Lead",
+        goal="Identify high-risk regressions, untested branches, and rollback feasibility.",
+        backstory="Has seen which 'small changes' took prod down. Asks for a kill-switch on every launch.",
+        llm=reasoner, allow_delegation=False,
+    ),
+    "writing-tests", "avoiding-flaky-tests", "incident-response",
 )
 
-release_mgr = Agent(
-    role="Release Manager",
-    goal="Plan rollout phases, comms, monitoring, and rollback. Produce a go/no-go.",
-    backstory="Friday-deploy survivor. Won't ship without monitors and a documented rollback.",
-    llm=reasoner, allow_delegation=False,
+release_mgr = with_defaults(
+    Agent(
+        role="Release Manager",
+        goal="Plan rollout phases, comms, monitoring, and rollback. Produce a go/no-go.",
+        backstory="Friday-deploy survivor. Won't ship without monitors and a documented rollback.",
+        llm=reasoner, allow_delegation=False,
+    ),
+    "incident-response", "handling-failures-and-retries", "explaining-changes",
 )
 
 ROLES = {
