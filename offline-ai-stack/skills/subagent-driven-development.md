@@ -43,3 +43,15 @@ For tasks larger than ~50 LOC of changes:
 2. Spawn a focused subagent per subtask with a tightly scoped prompt and only the files it needs.
 3. Each subagent returns a diff + rationale + self-review.
 4. Parent agent integrates and runs cross-cutting tests.
+5. Prefer the standard role catalog when picking subagents; only invent a new role if no catalog role fits.
+
+Standard subagent catalog (compose 2–7 of these per task):
+- **Architect** — module boundaries, interfaces, sequencing across subtasks.
+- **Backend** — server / service / data-layer changes within its file scope.
+- **Frontend** — UI / component / styling changes within its file scope.
+- **Database** — schema, migration, query plan; owns the migration files.
+- **Security** — input handling, auth, secrets, deserialization on the touched code.
+- **QA** — unit + integration tests + cross-cutting test for the integration step.
+- **Documentation** — README / ARCHITECTURE / CHANGELOG aligned with the actual change.
+
+Each subagent must have a single specialty, a non-overlapping file scope, and return a diff + rationale + self-review on its scope only. Disagreements between subagents are escalated to the Architect, never silent-merged.

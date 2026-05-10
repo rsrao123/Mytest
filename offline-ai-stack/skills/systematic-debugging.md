@@ -28,7 +28,8 @@ Before declaring fixed, verify:
 2. Hypotheses + falsification outcomes are recorded in the bug notes.
 3. The fix targets the root cause; any symptom-level fix is marked as tactical.
 4. Regression test added.
-Pass: deterministic repro + record + cause-targeted fix + regression test.
+5. Prevention advice recorded for the bug class: lint rule, fixture, alert, or convention that would have caught this earlier.
+Pass: deterministic repro + record + cause-targeted fix + regression test + prevention note.
 Fail action: re-read the relevant code; speculation needs another reset before the next attempt.
 
 ## Agentic capabilities
@@ -45,3 +46,4 @@ Fail action: re-read the relevant code; speculation needs another reset before t
 5. If falsified, revise. Do not speculate without testing.
 6. Bisect when the search space is large (git bisect, binary-search inputs).
 7. Fix the cause, not the symptom. Add a regression test.
+8. Record prevention advice: name the lint rule, fixture, alert, or convention that would have caught this bug class earlier.

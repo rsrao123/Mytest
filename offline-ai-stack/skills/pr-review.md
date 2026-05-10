@@ -41,10 +41,20 @@ Fail action: complete the missed dimension before posting.
 For each PR, audit in this order and report findings with file:line refs.
 
 1. **Correctness** — does it do what the description claims? Edge cases? Off-by-ones?
-2. **Tests** — are new code paths covered? At least one failure-mode test?
-3. **Security** — input validation, authn/authz, secrets, injection sinks.
-4. **Performance** — N+1 queries, unbounded loops, allocations on hot paths.
-5. **Style** — matches project conventions; no dead code; no debug prints.
-6. **Documentation** — public APIs, ADRs, README updates.
+2. **Logic errors** — wrong branch, wrong predicate, wrong default, missed `else`.
+3. **Edge cases** — empty / zero / negative / max / unicode / race / partial-failure paths.
+4. **Tests** — are new code paths covered? At least one failure-mode test? Are existing tests still meaningful or have they been weakened?
+5. **Missing tests** — name the untested branches; do not let "tests pass" stand in for "tests cover this".
+6. **Duplicated code** — same logic appearing in two places that should converge.
+7. **Bad architecture** — coupling across layers, broken abstraction, hidden state.
+8. **Over-engineering** — abstractions, options, or flags with no current caller.
+9. **Poor naming** — names that don't predict behavior; misleading verbs / nouns.
+10. **Error handling** — bare `except:`, swallowed errors, untyped failures.
+11. **Project rule violations** — CONVENTIONS.md, CLAUDE.md, lint config, code-owners.
+12. **Git diff context** — `git log` / `blame` on touched lines; what was the recent intent?
+13. **Security** — input validation, authn/authz, secrets, injection sinks (cross-link to `security-review`).
+14. **Performance** — N+1 queries, unbounded loops, allocations on hot paths.
+15. **Style** — matches project conventions; no dead code; no debug prints.
+16. **Documentation** — public APIs, ADRs, README updates.
 
 End with a verdict: APPROVE / REQUEST_CHANGES / BLOCK, with the top blocker called out.

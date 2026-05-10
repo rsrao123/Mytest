@@ -39,6 +39,11 @@ Fail action: halt; surface state to the user; do not advance to the next step.
 - **Autonomy budget:** Execute steps as written. Any deviation requires a plan update first, not improvisation.
 
 1. Read the entire plan before touching anything.
-2. Execute one step at a time; verify before proceeding.
-3. If a step fails, do NOT improvise — report the failure with state and ask.
-4. Update the plan in place when reality diverges; never silently deviate.
+2. Read the relevant files before editing them; never edit blind.
+3. Execute one step at a time; verify before proceeding.
+4. Keep changes minimal and scoped to the current step.
+5. Do not change unrelated files; if the step requires it, stop and amend the plan first.
+6. Run the project's tests if tests exist; never skip them to advance.
+7. If a step fails, do NOT improvise — report the failure with state and ask.
+8. Update the plan in place when reality diverges; never silently deviate.
+9. Do not push to git or deploy without explicit user approval; the plan does not authorize publish actions on its own.

@@ -40,10 +40,20 @@ Fail action: rewrite the failing step; the plan isn't ready for execution.
 - **Autonomy budget:** Draft + iterate autonomous. Final approval requires the executor agent or a human to sign off.
 
 A plan must contain:
-- Goal (one sentence, outcome-shaped)
-- Acceptance criteria (testable)
-- Out-of-scope (explicit)
-- Steps (ordered, each with a verify step)
-- Rollback for each step
-- Time estimate per step
-Reject any plan missing rollback or acceptance criteria.
+- **Goal** (one sentence, outcome-shaped)
+- **Scope** (what is explicitly in)
+- **Non-scope** (what is explicitly out, to pre-empt creep)
+- **Requirements** (functional + non-functional, testable)
+- **Acceptance criteria** (testable, derived from requirements)
+- **Architecture** (components touched, new interfaces, data flow)
+- **Files to create or change** (path + brief intent per file)
+- **Step-by-step implementation plan** (ordered, each step independently executable)
+- **Test plan** (unit + integration + manual cases per step)
+- **Security considerations** (input handling, secrets, auth, deserialization for the touched code)
+- **Risks and mitigations** (per risk: likelihood, impact, mitigation)
+- **Rollback plan** (per step: the exact reverse action)
+- **Time estimate** (per step)
+- **Success criteria** (observable end-state — what proves the plan worked)
+- **Handoff to executing-plans** (one-paragraph packet with goal, plan link, prerequisites)
+
+Reject any plan missing acceptance criteria, rollback, security considerations, or success criteria. Save the final plan as `PLAN.md` (or under `plans/<id>.md`) when file editing is available.

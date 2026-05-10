@@ -42,3 +42,18 @@ When subtasks are independent (no shared file writes):
 - Dispatch them concurrently via CrewAI Process.parallel or asyncio.gather.
 - Set explicit non-overlapping file scopes per agent.
 - Merge results; if conflicts, escalate to the architect agent.
+
+Standard parallel reviewer catalog (compose 2–7 of these per review):
+- **Bug Hunter** — logic bugs, off-by-ones, race conditions, unhandled errors.
+- **Security Reviewer** — input handling, auth, secrets, deserialization, OWASP top-10.
+- **Performance Reviewer** — N+1 queries, hot-path allocations, unnecessary network round-trips.
+- **Code Style Reviewer** — naming, formatting, project-conventions compliance.
+- **Test Coverage Reviewer** — missing tests, untested branches, mock-heavy tests.
+- **Architecture Reviewer** — module boundaries, hidden coupling, premature abstraction.
+- **Git History Reviewer** — context from `git log` / `git blame` on the touched lines.
+
+Rules for the catalog:
+- Each reviewer reads the same diff but reports independently in its own dimension.
+- Findings are deduplicated across reviewers before merging into the final report.
+- Severity ranking (Critical / Major / Minor) is applied at the merge step, not by individual reviewers.
+- File paths and function names must appear in every finding; vague comments are rejected.

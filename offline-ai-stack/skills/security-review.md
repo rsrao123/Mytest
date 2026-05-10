@@ -2,20 +2,20 @@
 
 ## Think first
 - Where does untrusted input enter this code, and which sinks does it eventually reach?
-- For each finding, which of the 10 vulnerability classes (injection / deserialization / authz / SSRF / etc.) is it?
+- For each finding, which of the 12 vulnerability classes (injection / deserialization / authz / SSRF / file-upload / dependency / etc.) is it?
 - Is this a blocker for merge, or ship-with-followup? Decide *before* writing the finding.
 - What's the smallest fix that closes the path without driving the vulnerability into hiding?
 
 ## Reasoning
 For each finding, work through:
 1. Trace untrusted input from its entry point to every sink it can reach.
-2. Classify the path under one of the 10 vulnerability classes below.
+2. Classify the path under one of the 12 vulnerability classes below.
 3. Assess severity: CRITICAL / HIGH / MEDIUM / LOW — based on exploitability AND blast radius.
 4. Propose the smallest fix that closes the path; mark blocker vs ship-with-followup explicitly.
 
 ## Plan
 For each finding:
-1. Trace input-to-sink end-to-end; classify under one of the 10 vulnerability classes below.
+1. Trace input-to-sink end-to-end; classify under one of the 12 vulnerability classes below.
 2. Assess severity + blast radius; pick CRITICAL / HIGH / MEDIUM / LOW.
 3. Stop and decide: is this a merge blocker, or ship-with-followup?
 4. Propose the smallest fix; file follow-up tickets if needed; record evidence (file:line + reproducer).
@@ -25,7 +25,7 @@ Rollback if: the "smallest fix" hides the issue without closing it — escalate;
 ## Validation
 Before triage decision, verify per finding:
 1. Each finding has SEVERITY + FILE:LINE + EXPLOIT + FIX recorded.
-2. Vuln class named (one of the 10 listed below).
+2. Vuln class named (one of the 12 listed below).
 3. Triage decision (block / ship-with-followup) is explicit.
 4. Reproducer attached for HIGH and CRITICAL findings.
 Pass: schema complete + class named + triage explicit + reproducer for HIGH+.
@@ -90,5 +90,17 @@ SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 
 10. **Open redirect**
     - Redirects to user-supplied URLs without origin check
+
+11. **Insecure file upload**
+    - Uploads stored in a web-served directory without content-type and extension validation
+    - No size cap; no AV/sandbox scan on upload paths
+    - Filename used directly in storage path (path traversal via filename)
+    - Image / archive parsers run on untrusted bytes without resource limits
+
+12. **Vulnerable dependencies**
+    - Direct or transitive deps with open CVEs (`pip-audit`, `npm audit`, `trivy`)
+    - Unpinned versions in lockfile / requirements
+    - Abandoned upstreams (no release in > 2 years on a security-relevant dep)
+    - Pulled-in licenses incompatible with project policy (LGPL/AGPL/non-OSI)
 
 End with a triage recommendation: which findings block merge, which can ship with follow-up tickets.
