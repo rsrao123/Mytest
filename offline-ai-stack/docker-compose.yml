@@ -31,18 +31,15 @@ services:
     environment:
       OPENAI_API_BASE_URL: http://host.docker.internal:8000/v1
       OPENAI_API_KEY: local
-      ENABLE_RAG_LOCAL_WEB_FETCH: "true"
+      # ENABLE_RAG_LOCAL_WEB_FETCH intentionally NOT set — would make external HTTP calls.
+      ENABLE_OPENAI_API: "true"
+      WEBUI_AUTH: "false"
     volumes:
       - open-webui:/app/backend/data
 
-  searxng:
-    image: searxng/searxng
-    container_name: searxng
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8888:8080"
-    volumes:
-      - searxng:/etc/searxng
+  # SearXNG removed: it's a metasearch *proxy* that queries Google/Bing/DDG —
+  # incompatible with strict-offline. Re-add it only if you accept the
+  # external queries as a deliberate exception.
 
   forgejo:
     image: codeberg.org/forgejo/forgejo:9
@@ -121,7 +118,6 @@ services:
 
 volumes:
   open-webui:
-  searxng:
   woodpecker-server-data:
   prometheus-data:
   grafana-data:

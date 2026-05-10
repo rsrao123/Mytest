@@ -2,6 +2,32 @@
 
 A fully-offline, open-source replacement for Claude Code + Claude MEM + a multi-agent dev team. Targets a single-workstation deployment.
 
+## Strict-offline guarantee
+
+After a one-time prep with internet (model downloads, scanner DB caches, image
+pulls), the stack runs **with the network unplugged**. The guarantee covers:
+
+- All inference (vLLM + Qwen3-Coder-Next + Devstral) — local
+- All embeddings (Chroma's local sentence-transformers default) — local
+- All security scans (bandit / semgrep / gitleaks / pip-audit / trivy) — local rules + cached DBs
+- All agent frameworks (CrewAI, LangGraph) — only call localhost vLLM
+- All storage (Chroma, Forgejo, Woodpecker, Langfuse, Open WebUI) — self-hosted
+- Memory layer (`scripts/claude_mem_local.py`) — Chroma + local LLM
+- Telemetry — disabled (Aider analytics, LangChain tracing, LangSmith, `DO_NOT_TRACK=1`)
+
+To enable the guarantee, run **once with internet**:
+```bash
+make offline-prep   # downloads model files, scanner DBs, sets telemetry-off
+```
+
+**Removed for strict offline:** SearXNG (metasearch proxy → external queries),
+browser-use / Playwright (drives real browser → real URLs), `safety` (its
+offline DB is commercial; `pip-audit` covers the same ground via OSV).
+
+The only remaining online dependency is the first-time model pull (~400 GB
+from HuggingFace) plus `apt`/`pip`/`docker pull` for the base system. Re-run
+`make offline-prep` every ~90 days to refresh CVE/OSV data.
+
 ## 0. Target machine
 
 | Item | Spec |
@@ -491,47 +517,38 @@ Wire to Open WebUI's audio input or a custom hotkey daemon.
 
 ---
 
-## 9. Security suite (CI-callable)
+## 9. Security suite (CI-callable, strictly offline)
 
 ```bash
-pip install bandit semgrep safety pip-audit
+pip install bandit semgrep pip-audit
 sudo apt install -y gitleaks
 curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
 ```
 
-`scripts/security_scan.sh`:
+Run `make offline-prep` once (with internet) to pre-cache the rule databases.
+After that, `scripts/security_scan.sh` runs every scanner against a *local*
+cache and never reaches for the network. It fails loud (exit 2) rather than
+silently going online if a cache is missing:
 
-```bash
-#!/usr/bin/env bash
-set -e
-mkdir -p reports
-bandit -r . -f json -o reports/bandit.json || true
-semgrep --config auto --json -o reports/semgrep.json . || true
-safety check --json > reports/safety.json || true
-pip-audit -f json > reports/pip-audit.json || true
-gitleaks detect --report-format json --report-path reports/gitleaks.json || true
-trivy fs --format json -o reports/trivy.json . || true
-echo "Scans complete: see reports/"
-```
+- `bandit` — fully offline (rules baked into the package).
+- `semgrep` — vendored ruleset under `~/offline-ai-stack/cache/semgrep-rules/`;
+  refuses `--config auto`.
+- `pip-audit` — OSV-mirror cache under `~/offline-ai-stack/cache/osv/`.
+- `gitleaks` — fully offline (rules baked into the binary).
+- `trivy` — pre-downloaded CVE DB under `~/offline-ai-stack/cache/trivy-db/`;
+  invoked with `--offline-scan --skip-db-update`.
+
+**`safety` removed** — its offline DB requires a commercial license; `pip-audit`
+covers the same ground via OSV.
 
 ---
 
 ## 10. Browser & research
 
-SearXNG (private metasearch):
-
-```bash
-docker run -d --name searxng -p 8888:8080 \
-  -v searxng:/etc/searxng \
-  searxng/searxng
-```
-
-browser-use (LLM-driven Playwright):
-
-```bash
-pip install browser-use playwright
-playwright install chromium
-```
+**Removed for strict-offline operation.** SearXNG is a metasearch *proxy* that
+queries Google / Bing / DDG, and browser-use drives a real browser against real
+URLs — both make external HTTP calls every time they're invoked. Re-add them
+deliberately only if you accept that they violate the offline guarantee.
 
 ---
 
@@ -770,7 +787,7 @@ Import the NVIDIA DCGM dashboard (id 12239). VRAM creep, thermal throttling, and
 ## 20. Final architecture
 
 ```
-                  [User / Voice → faster-whisper]
+                  [User / Voice → faster-whisper]   (no network)
                               │
                        [Caddy reverse proxy]
                               │

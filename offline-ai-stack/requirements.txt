@@ -14,9 +14,13 @@ llama-index>=0.11,<1.0
 llama-index-vector-stores-chroma>=0.3,<1.0
 llama-index-embeddings-huggingface>=0.4,<1.0
 faster-whisper>=1.0,<2.0
+# Strictly-offline security scanners only. semgrep is included; the scan
+# script uses a vendored ruleset, not --config auto. pip-audit runs against
+# a cached OSV mirror prepared by scripts/offline-prep.sh.
 bandit>=1.7,<2.0
 semgrep>=1.90,<2.0
-safety>=3.0,<4.0
 pip-audit>=2.7,<3.0
-browser-use>=0.1,<1.0
-playwright>=1.45,<2.0
+# Intentionally NOT included (they make external HTTP calls at runtime):
+#   safety        — queries safety.io
+#   browser-use   — drives a real browser at real URLs
+#   playwright    — same

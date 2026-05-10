@@ -5,4 +5,4 @@
 127.0.0.1  git.local
 127.0.0.1  ci.local
 127.0.0.1  trace.local
-127.0.0.1  search.local
+# search.local removed with SearXNG (was online-only).

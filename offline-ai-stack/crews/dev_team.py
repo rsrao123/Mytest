@@ -242,7 +242,12 @@ def build_crew(ticket: str) -> Crew:
             review_bugs, review_sec, review_perf, test, docs, release,
         ],
         process=Process.sequential,  # switch to hierarchical for manager-led
-        memory=True,                  # uses ChromaDB if configured
+        # CrewAI's built-in `memory=True` can silently call OpenAI for
+        # embeddings if its embedder isn't explicitly configured. We disable
+        # it and route all project memory through scripts/claude_mem_local.py
+        # (Chroma with the default local sentence-transformers embedder).
+        # Strictly offline by construction.
+        memory=False,
         verbose=True,
     )
 

@@ -4,26 +4,26 @@ CREWS := $(STACK)/crews
 SCRIPTS := $(STACK)/scripts
 PROJECT ?= $(shell basename $$(pwd))
 
-.PHONY: help bring-up tear-down compose-up compose-down ingest voice browse \
+.PHONY: help offline-prep bring-up tear-down compose-up compose-down ingest voice \
         plan-ceo-review plan-eng-review plan-design-review plan-all-reviews \
         review security-review qa ship mem-recall eval
 
 help:
 	@echo "Targets:"
+	@echo "  offline-prep        One-shot: pre-cache scanner DBs, embed model, set telemetry-off"
 	@echo "  bring-up            Start vLLM + docker stack (Section 21)"
 	@echo "  tear-down           Stop everything (preserves volumes)"
 	@echo "  compose-up          docker compose up -d"
 	@echo "  compose-down        docker compose down"
 	@echo "  ingest DIR=<path>   Ingest a project into Chroma project-memory"
 	@echo "  voice FILE=<wav>    Transcribe an audio file with faster-whisper"
-	@echo "  browse Q='...'      LLM-driven browser research"
 	@echo "  plan-ceo-review     Plan review by CEO agent"
 	@echo "  plan-eng-review     Plan review by Engineering Lead"
 	@echo "  plan-design-review  Plan review by Design Lead"
 	@echo "  plan-all-reviews    All exec roles in parallel"
 	@echo "  review              4-agent parallel code review on git diff main"
 	@echo "  security-review     Standalone security agent on git diff main"
-	@echo "  qa                  security scanners + pytest"
+	@echo "  qa                  security scanners + pytest (all offline)"
 	@echo "  ship                Release-manager review (PLAN=...)"
 	@echo "  mem-recall Q='...'  Recall past-session context for current project"
 	@echo "  eval                promptfoo eval against vLLM endpoints"
@@ -48,9 +48,8 @@ voice:
 	@test -n "$(FILE)" || (echo "Set FILE=<audio>" && exit 2)
 	python $(SCRIPTS)/voice_transcribe.py $(FILE)
 
-browse:
-	@test -n "$(Q)" || (echo "Set Q='research task'" && exit 2)
-	python $(SCRIPTS)/browser_research.py "$(Q)"
+offline-prep:
+	bash $(SCRIPTS)/offline-prep.sh
 
 plan-ceo-review:
 	python $(CREWS)/exec_review.py --role ceo --plan $(PLAN)
