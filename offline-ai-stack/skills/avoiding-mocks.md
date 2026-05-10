@@ -6,6 +6,13 @@
 - If I write a fake instead of a mock, what behavioral contract must it honor?
 - What's the cost when the real dep changes shape — does my mock catch it or hide it?
 
+## Reasoning
+Before writing a mock, work through:
+1. Name the real component and the concrete reason it can't be used in this test.
+2. Locate it: at the system boundary (mock acceptable) or inside code I own (smell — refactor instead).
+3. If a fake will replace it, write the behavioral contract the fake must honor.
+4. Conclude with one of: real / fake / boundary-mock — and a one-line justification recorded in the test.
+
 Default: don't mock. Mocks couple tests to implementation and rot fast.
 
 1. **Real things first.** Use the real DB (sqlite/test container), real filesystem (tmpdir), real clock when ±1s is fine.

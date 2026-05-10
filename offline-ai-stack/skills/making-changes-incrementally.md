@@ -6,6 +6,13 @@
 - Will every commit on this branch compile and pass tests in isolation? Is the chain `git bisect`-able?
 - Is there a feature-flag-off path I should ship first, then flip in a follow-up?
 
+## Reasoning
+For each branch, work through:
+1. Estimate net diff size; if > ~200 lines, list concrete split points before starting.
+2. Order the splits: structural first (rename, extract, move), then behavior — never bundled.
+3. Verify each commit compiles and passes tests in isolation; chain must be `git bisect`-able.
+4. Plan the flag-off + flip sequence for risky behavior changes; ship the off path first.
+
 1. Aim for small, reviewable diffs (≤ ~200 lines net). Bigger diffs hide mistakes and stall reviews.
 2. Land structural changes first (renames, extracts, moves), then behavior changes — never bundle them.
 3. Each commit must compile and pass tests. The chain should be `git bisect`-able.

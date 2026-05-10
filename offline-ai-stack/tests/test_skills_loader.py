@@ -89,6 +89,45 @@ def test_each_skill_has_think_first_section(name: str):
     )
 
 
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_each_skill_has_reasoning_section(name: str):
+    """Every skill must include a `## Reasoning` section with a numbered inference procedure.
+
+    The reasoning section is a domain-specific inference chain the agent produces as written
+    output before applying the rules. It must list at least 3 numbered steps. See
+    docs/SUPERPOWERS.md §5 for the authoring contract.
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    assert "## Reasoning" in body, f"{name}.md is missing the '## Reasoning' section"
+    section = body.split("## Reasoning", 1)[1]
+    # Stop at the next H2 or end-of-file.
+    end_idx = section.find("\n## ")
+    if end_idx < 0:
+        end_idx = len(section)
+    numbered = [
+        line for line in section[:end_idx].splitlines()
+        if line.strip()[:2].rstrip(".").isdigit() and "." in line.strip()[:3]
+    ]
+    assert len(numbered) >= 3, (
+        f"{name}.md '## Reasoning' section has only {len(numbered)} numbered steps; need ≥ 3"
+    )
+
+
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_skill_section_order(name: str):
+    """`## Think first` must precede `## Reasoning` in every skill.
+
+    The two layers are sequential: deliberate (Think first) → reason (Reasoning) → act (rules).
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    think_idx = body.find("## Think first")
+    reason_idx = body.find("## Reasoning")
+    assert think_idx >= 0 and reason_idx >= 0
+    assert think_idx < reason_idx, (
+        f"{name}.md: '## Think first' must appear before '## Reasoning'"
+    )
+
+
 def test_load_concatenates_named_skills():
     out = load("brainstorming", "writing-plans")
     assert "# Skill: Brainstorming" in out

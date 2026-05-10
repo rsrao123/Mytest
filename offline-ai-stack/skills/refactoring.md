@@ -6,6 +6,13 @@
 - Am I tempted to "fix" something the task doesn't require? Note it as follow-up; don't expand scope.
 - Is there a prematurely-extracted helper here that I could *inline* rather than refactor further?
 
+## Reasoning
+For each refactor, work through:
+1. Run the full test suite *before* starting; confirm green. (No green, no refactor.)
+2. State the structural change in one sentence; verify it's behavior-preserving by construction.
+3. Apply the smallest single structural change; re-run all tests; confirm green again.
+4. Commit alone — never bundle with feature work or unrelated cleanups.
+
 Tidy First. Behavior-preserving changes only.
 
 1. Separate refactor commits from feature commits. Never mix.

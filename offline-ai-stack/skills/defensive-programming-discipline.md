@@ -6,6 +6,13 @@
 - If I removed this check, what observable failure would appear, and where in the stack?
 - Am I asserting an invariant (must always hold) or validating user input (might be wrong)? They want different tools.
 
+## Reasoning
+For each defensive check, work through:
+1. Locate the trust boundary; place the check just on the inside.
+2. Walk the call graph: has upstream code in this codebase already validated this value?
+3. Predict the observable failure mode if the check is removed (typed exception, traceback, silent corruption).
+4. Conclude: keep at boundary / drop redundant / convert to assertion documenting an invariant.
+
 Defensive checks have a cost: they hide bugs and inflate code. Use them where they earn their keep.
 
 1. **Validate at boundaries** (HTTP, queue, file I/O, FFI). Trust internal calls.

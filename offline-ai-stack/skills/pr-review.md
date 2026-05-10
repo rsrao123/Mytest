@@ -6,6 +6,13 @@
 - Have I addressed all six dimensions (correctness, tests, security, perf, style, docs) proportionally?
 - What's my final verdict, in one word: APPROVE / REQUEST_CHANGES / BLOCK?
 
+## Reasoning
+Audit each PR in this order, recording findings as you go:
+1. **Correctness:** trace the diff against the description's claims, including edges the description omits.
+2. **Tests:** new code paths covered? Failure-mode test for each? Existing tests still meaningful?
+3. **Security / perf / style / docs** in turn — each finding has file:line evidence.
+4. Conclude with a one-word verdict and the top blocker (if any).
+
 For each PR, audit in this order and report findings with file:line refs.
 
 1. **Correctness** — does it do what the description claims? Edge cases? Off-by-ones?

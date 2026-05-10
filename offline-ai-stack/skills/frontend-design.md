@@ -6,6 +6,13 @@
 - Am I about to introduce any of the listed anti-patterns (purple gradient, glassmorphism, emoji-as-icon)?
 - How does this design hold at 375 / 768 / 1280 px — and which empty / loading / error states have I forgotten?
 
+## Reasoning
+For each UI task, work through:
+1. Choose ONE aesthetic profile (LUXURY / REFINED / BRUTALIST / EDITORIAL); name it explicitly.
+2. List the 3-4 shadcn primitives that compose the layout; reject re-inventions.
+3. Audit candidate against the anti-pattern list before opening the editor.
+4. Plan empty / loading / error states and breakpoint behavior at 375 / 768 / 1280 px.
+
 ## Anti-patterns (never produce these by default)
 - Purple/blue gradient hero sections
 - Glassmorphism (backdrop-blur on every card)

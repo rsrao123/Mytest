@@ -6,6 +6,13 @@
 - What's the most surprising thing in this diff that a cold reader would miss?
 - What caveats (migrations, deploy order, feature flags, breaking changes) does the reader need *before* reading the diff?
 
+## Reasoning
+Build the description in this order:
+1. State the user/system pain in one sentence (the *why*).
+2. Name the alternative considered + the concrete reason it was rejected.
+3. Surface caveats: migrations, deploy ordering, feature flags, breaking changes.
+4. Lead the message with the why; close with how the reader can verify locally.
+
 The audience for a commit message and PR description is *future-you reading git blame at 2am*. Write for them.
 
 1. Lead with *why*, not *what*. The diff already shows what.

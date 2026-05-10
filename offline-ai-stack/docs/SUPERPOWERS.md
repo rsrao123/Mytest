@@ -27,6 +27,11 @@ deliberately terse and prescriptive; the *why* and the *how* live here.
   block that forces the agent to surface assumptions and choose before
   reaching for the imperative rules. Pattern-matching is the failure mode
   these skills exist to prevent.
+- **Reasoning shown, not implied** — every skill also ships a
+  `## Reasoning` block: a short, domain-specific inference procedure the
+  agent must produce as written output before acting. This makes the
+  skill's logic auditable in the agent's response, not just in its
+  outcome.
 
 ### Non-goals
 - Replacing fine-tuning. Skills bias behavior; they don't change capability.
@@ -73,30 +78,49 @@ filesystem *is* the registry.
 
 ### 2.0 Anatomy of a skill file
 
-Every skill file has two sections in a fixed order:
+Every skill file has three sections in a fixed order — **deliberate →
+reason → act**:
 
 ```
 # Skill: <Name>
 
 ## Think first
-- <reflective question>
-- <reflective question>
-- <reflective question>
+- <reflective question that surfaces an assumption>
+- <reflective question that names a tradeoff>
+- <reflective question that catches a common failure>
+
+## Reasoning
+<one-line statement of when this procedure runs>:
+1. <inference step 1 — observe>
+2. <inference step 2 — classify or hypothesize>
+3. <inference step 3 — check or experiment>
+4. <inference step 4 — conclude with a named choice>
 
 1. <imperative rule>
 2. <imperative rule>
 …
 ```
 
-The thinking layer is *required* — it's enforced by
-`tests/test_skills_loader.py::test_each_skill_has_think_first_section`,
-which fails CI if a skill ships fewer than three domain-specific
-prompts. Rationale: the rule layer is easy to pattern-match without
-deliberation, especially under time pressure. The thinking layer
-forces the agent to surface what it's assuming and what it's choosing
-*before* it reaches for the rules. Empirically (see
-`promptfooconfig.yaml` baselines), this improves rule adherence on
-ambiguous cases more than longer rule lists do.
+| Layer | Purpose | Form | Output the agent produces |
+|---|---|---|---|
+| `## Think first` | Metacognition: surface assumptions and tradeoffs before acting. | 3–4 reflective questions specific to the skill's domain. | None directly — the questions reshape the agent's plan. |
+| `## Reasoning` | Inference: a domain-specific procedure the agent walks through. | 3–5 numbered steps; observe → hypothesize → check → conclude. | A written reasoning trace inline in the agent's response. |
+| Numbered rules | Action: imperative checklist for the actual work. | Action-first sentences. | The work product (diff, review, plan, etc.). |
+
+All three layers are enforced by `tests/test_skills_loader.py`:
+
+- `test_each_skill_has_think_first_section` — ≥ 3 reflective prompts.
+- `test_each_skill_has_reasoning_section` — ≥ 3 numbered inference steps.
+- `test_skill_section_order` — `## Think first` precedes `## Reasoning`.
+
+Rationale: the rule layer alone is easy to pattern-match without
+deliberation, especially under time pressure. Adding the thinking layer
+forces the agent to surface what it's assuming. Adding the reasoning
+layer forces the agent to *show its work* — which makes the skill
+auditable from the response, not just from the outcome. Empirically
+(see `promptfooconfig.yaml` baselines), the combination improves rule
+adherence on ambiguous cases more than longer rule lists do, and makes
+review by humans or downstream agents tractable.
 
 ### 2.1 Why backstory injection, not system-prompt injection?
 
@@ -571,13 +595,20 @@ inject(release_mgr, "incident-response", "handling-failures-and-retries",
 - <Domain-specific question that tests for a common failure mode.>
 - <Optional fourth question.>
 
+## Reasoning
+<One-line statement of when this procedure runs>:
+1. <Observe — what facts to inventory.>
+2. <Classify or hypothesize — what to label or guess.>
+3. <Check or experiment — what to verify before concluding.>
+4. <Conclude — what named choice to produce.>
+
 1. <Imperative sentence>.
 2. <Imperative sentence>.
 3. <Imperative sentence>.
 …
 ```
 
-The two halves do different jobs:
+The three layers do different jobs:
 
 - **`## Think first`** — 3-4 reflective questions in the agent's voice,
   specific to *this* skill's domain. Their job is to make the agent
@@ -585,28 +616,37 @@ The two halves do different jobs:
   catch a common failure mode. Generic prompts ("think carefully") are
   rejected — questions must be checkable against the agent's eventual
   output.
+- **`## Reasoning`** — 3-5 numbered inference steps the agent must
+  produce as written output. The shape is observe → hypothesize/classify
+  → check/experiment → conclude. Generic chain-of-thought ("think step
+  by step") is rejected — the steps must encode the *specific* moves
+  that this skill demands. The agent's written trace is the audit
+  surface.
 - **Numbered rules** — imperative, action-first, one sentence each.
-  This is the *do* layer that the thinking layer feeds into.
+  This is the *do* layer that the deliberation and inference layers
+  feed into.
 
 Constraints:
-- ≤ 40 lines total (Think first + rules).
-- 3–4 thinking questions, ≤ 10 imperative steps.
+- ≤ 50 lines total (Think first + Reasoning + rules).
+- 3–4 thinking questions, 3–5 reasoning steps, ≤ 10 imperative rules.
 - One sentence per item, present tense, action-first for rules; question
-  form for the thinking layer.
+  form for `## Think first`; imperative form for `## Reasoning` steps.
 - No anecdotes, no rationale paragraphs. Anecdotes go here in
   `SUPERPOWERS.md`.
 - File name is kebab-case and matches the heading.
 - Skill must be checkable: a reviewer can audit one output at a time
-  against both the thinking prompts and the rules.
+  against the thinking prompts, the reasoning trace, and the rules.
 
 ### 5.2 Submission checklist
 
 - [ ] File created at `skills/<kebab-name>.md`.
 - [ ] Heading matches `# Skill: <Title Case>`.
 - [ ] `## Think first` section present with ≥ 3 domain-specific questions.
+- [ ] `## Reasoning` section present with ≥ 3 numbered inference steps.
+- [ ] `## Think first` precedes `## Reasoning` in the file.
 - [ ] Numbered rules section present.
 - [ ] Added to `tests/test_skills_loader.py::REQUIRED_SKILLS`.
-- [ ] `pytest tests/` passes (file exists, heading correct, ≥ 3 think-first prompts).
+- [ ] `pytest tests/` passes (file exists, heading, both sections, order, prompt counts).
 - [ ] Catalog entry added to §3 here, including triggers, inverse,
   working signal, companions.
 - [ ] If the skill changes implementer behavior, add at least one new
@@ -631,6 +671,16 @@ Constraints:
   has a 1:1 mapping with a numbered rule, drop one. The two layers
   should ask the agent to deliberate and then act, not say the same
   thing twice.
+- **Generic reasoning chains.** "Think step by step" or "Break the
+  problem down" in the `## Reasoning` section. The numbered steps must
+  encode the *specific* moves that this skill demands — observe what,
+  classify how, check against what, conclude with which named choice.
+  If the steps would apply equally to a different skill, they're too
+  generic.
+- **Reasoning that doesn't terminate in a choice.** Every reasoning
+  trace must end in a named, observable conclusion (a verdict, a
+  classification, a chosen option, a typed error). Open-ended reasoning
+  invites the agent to keep deliberating without acting.
 
 ---
 

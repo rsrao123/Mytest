@@ -6,6 +6,13 @@
 - Am I reviewing the *change*, or am I drifting into pre-existing code that the diff merely touches?
 - If this review takes me more than 30 minutes, is the diff too big to review well?
 
+## Reasoning
+For each PR review, work through:
+1. Note one concrete thing the author did well; lead the review with it.
+2. For each comment, tag explicitly: BLOCKER / nit / question.
+3. Verify each comment targets *the change*, not pre-existing code that the diff merely touches.
+4. State a single verdict — APPROVE / REQUEST_CHANGES / BLOCK — with the top blocker named.
+
 1. Lead with what's good. Reviewers who only flag faults get tuned out.
 2. Distinguish blocking from non-blocking comments explicitly: prefix with `nit:`, `q:`, or `BLOCKER:`.
 3. Suggest, don't dictate. "Consider X because Y" beats "do X".

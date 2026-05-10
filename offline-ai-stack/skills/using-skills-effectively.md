@@ -6,6 +6,13 @@
 - Which skill should I draw on first, and which is supporting?
 - Am I composing too many skills and just adding noise?
 
+## Reasoning
+Before each task, work through:
+1. List the 2-3 skills that genuinely match this task's failure modes; reject the rest.
+2. Detect conflicts among loaded skills (e.g., `defensive-programming` vs `security-review`); name and resolve before acting.
+3. Pick a primary skill — the others are supporting voices, not co-equal.
+4. After execution, log which skill helped and which didn't; that feedback compounds across tasks.
+
 1. Load skills *before* you start the task, not mid-stream — the skill changes how you'd plan.
 2. Compose narrowly: pick the 2–3 skills that match the task, not all of them. Noise drowns signal.
 3. Skills override defaults; if a skill conflicts with another instruction, name the conflict explicitly and pick one.

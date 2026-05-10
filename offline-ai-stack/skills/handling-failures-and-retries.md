@@ -6,6 +6,13 @@
 - Is the underlying operation idempotent? If not, what idempotency key makes it so?
 - On final failure, what *typed* error do I surface, and does the caller have enough context to react?
 
+## Reasoning
+For each fallible call, work through:
+1. Classify each failure mode: transient (retry) / permanent (fail fast) / ambiguous (treat as transient with cap).
+2. Set a budget: max attempts AND max wall-clock — both required.
+3. Verify or impose idempotency (idempotency key, dedupe table, natural primary key).
+4. Define the typed final-error and the per-retry log signal (attempt #, delay, reason).
+
 1. **Classify before retrying.** Transient (network blip, 503) → retry. Permanent (400, 401, 422) → don't.
 2. Every retry needs a budget: max attempts AND max total time. Unbounded retries are an outage.
 3. Exponential backoff with full jitter (`random.uniform(0, base * 2**n)`) — fixed sleeps cause thundering herds.

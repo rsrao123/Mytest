@@ -6,6 +6,13 @@
 - What questions would I ask if I were reviewing this? Are they pre-empted in the description?
 - Is this one PR per concern, or have I sneaked in a refactor / unrelated cleanup?
 
+## Reasoning
+Before requesting review, work through:
+1. Run linters / formatters / full test suite yourself; resolve everything cleanly first.
+2. Predict the reviewer's first three questions; pre-empt each in the PR description.
+3. Confirm one PR per concern; if not, split before pushing.
+4. If any path isn't ready for behavior review, mark the PR as draft — don't burn reviewer time.
+
 1. Self-review first. Run the diff through your own eyes and the linters before paging anyone.
 2. Write the description so the reviewer can pick it up cold: what + why + how to verify.
 3. Pre-empt the obvious questions in the description ("I considered X but chose Y because…").

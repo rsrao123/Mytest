@@ -6,6 +6,13 @@
 - Where does shared mutable state live, and could a previous test have left it in an unexpected state?
 - What would I have to change to make this test fail reliably 100/100 times?
 
+## Reasoning
+For each test under suspicion, walk through:
+1. Enumerate every nondeterministic source the code touches (time, RNG, threads, network, FS, ordering).
+2. Classify each: input I can pin (control) vs output I must assert against.
+3. Locate shared mutable state and any prior-test mutation paths.
+4. Conclude with a fixture/seeding/freezing plan that makes the test 100/100 reliable.
+
 A flaky test is worse than no test — it trains the team to ignore failures.
 
 Sources of flakiness, in order of frequency:

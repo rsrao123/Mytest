@@ -6,6 +6,13 @@
 - What *other* symptoms would this same root cause produce? Have I searched for them?
 - Am I about to fix the cause, or just paper over the symptom where it surfaced?
 
+## Reasoning
+For each bug, dig down with this loop:
+1. State the symptom precisely; ask "why?" of it.
+2. Ask "why?" of each answer in turn; recurse until the answer stops surprising you (≥ 3 levels).
+3. Predict at least one *other* symptom the same root cause would produce; search the codebase for it.
+4. Fix the root cause + add a regression test that pins it; file follow-ups for any structural issues.
+
 1. Don't fix at the first plausible layer. Ask "why" until the answer stops surprising you (≥3 levels deep).
 2. Reproduce the bug with the smallest possible input. If you can't reproduce, you don't understand it.
 3. Stack traces lie about *cause* but tell the truth about *location*. Use them to bisect, not to diagnose.

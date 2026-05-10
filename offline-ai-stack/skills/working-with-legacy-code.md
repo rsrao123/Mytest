@@ -6,6 +6,13 @@
 - What seam can I introduce (parameter, subclass, env override) without editing the legacy callee directly?
 - What's the git-log story of this file telling me before I delete an "obviously redundant" check?
 
+## Reasoning
+Before changing legacy code, work through:
+1. Add characterization tests pinning the current behavior — including the weird parts; those are the real contract.
+2. Identify a seam (parameter, subclass, env override) that doesn't require editing the legacy callee directly.
+3. Sequence: characterize → refactor under green → feature. Never bundle.
+4. Read git log/blame on the touched lines; recover the institutional context before deleting "obviously redundant" code.
+
 1. Characterize before you change. Add tests that pin current behavior — *especially* the weird parts. Those are the contract.
 2. Don't refactor and feature-add in the same PR. Sequence: characterize → refactor under green tests → add feature.
 3. Resist the urge to rewrite. Rewrites underestimate the implicit knowledge encoded in the existing code.

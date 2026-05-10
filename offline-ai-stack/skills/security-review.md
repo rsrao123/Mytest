@@ -6,6 +6,13 @@
 - Is this a blocker for merge, or ship-with-followup? Decide *before* writing the finding.
 - What's the smallest fix that closes the path without driving the vulnerability into hiding?
 
+## Reasoning
+For each finding, work through:
+1. Trace untrusted input from its entry point to every sink it can reach.
+2. Classify the path under one of the 10 vulnerability classes below.
+3. Assess severity: CRITICAL / HIGH / MEDIUM / LOW — based on exploitability AND blast radius.
+4. Propose the smallest fix that closes the path; mark blocker vs ship-with-followup explicitly.
+
 Audit the code for these specific vulnerability classes. For each finding, report:
 SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 

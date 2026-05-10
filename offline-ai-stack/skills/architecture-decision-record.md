@@ -6,6 +6,13 @@
 - What would I regret in 6 months if I pick wrong, and which option minimizes that regret?
 - Is this decision reversible, and at what cost?
 
+## Reasoning
+Produce this trace before drafting the ADR:
+1. Inventory hard constraints (must-have) and soft preferences; mark each.
+2. For each candidate option, mark which hard constraints it satisfies / violates.
+3. Identify the single tradeoff axis on which the surviving options differ.
+4. State the chosen option + the constraint or tradeoff it optimizes; name what you give up.
+
 Use this template for every non-trivial architectural choice. File it under `docs/adr/NNNN-title.md`.
 
 ```

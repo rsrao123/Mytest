@@ -6,6 +6,13 @@
 - Could I delete a branch entirely instead of generalizing it?
 - Am I designing for next quarter when I should be shipping this week?
 
+## Reasoning
+Before adding any abstraction / option / flag, work through:
+1. Name the *current* caller; if there isn't one, delete instead of generalizing.
+2. Count occurrences of the pattern; if < 3, inline rather than extract.
+3. Compare cost of adding the abstraction now vs adding it when the third real caller appears.
+4. Conclude: ship the simple form; defer abstraction with a note explaining when it would unlock.
+
 1. Build for the requirement in front of you. Not the one you're imagining for next quarter.
 2. Three similar lines beat a premature abstraction. Wait for the fourth before extracting.
 3. No options, flags, or knobs without a current caller that needs them.

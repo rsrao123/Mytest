@@ -6,6 +6,13 @@
 - If I can't experiment cheaply, is this where I ask the user instead of guessing?
 - Am I about to invent a detail (filename, API shape, version, behavior) I haven't actually seen?
 
+## Reasoning
+For each fact you're about to use, work through:
+1. Mark confidence: known (verified now) / inferred (logical from a known) / guessed.
+2. For guessed: identify the cheapest experiment (read file, run command, check type) to convert it.
+3. If the experiment is too costly, flag the uncertainty to the user explicitly — don't proceed silently.
+4. Never fabricate. Cite the source ("from file X line Y") or mark "unverified" — never both absent.
+
 1. State your confidence explicitly. "I'm sure" / "I think" / "I'm guessing" are different signals — surface them.
 2. When you're guessing, run the cheapest experiment that converts the guess into knowledge before acting.
 3. If you can't experiment cheaply, ask. One clarifying question now beats one rolled-back PR later.

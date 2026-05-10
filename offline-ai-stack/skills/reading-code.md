@@ -6,6 +6,13 @@
 - What style does this file commit to (naming, error-handling, layering), and how should new code match it?
 - Can I narrate this function as inputs → invariants → outputs, on paper, before changing it?
 
+## Reasoning
+Before changing any code, work through:
+1. Read the test file first; extract the contract from what the tests assert.
+2. Classify the file under test: orchestration / domain / IO / glue. Read each kind differently.
+3. Trace one path end-to-end (entry → exit), noting naming and error-handling conventions in flight.
+4. Restate the file's commit-to style; commit to matching it in your edit (or, if not, explain why in the PR).
+
 Before you change code, understand it.
 
 1. Read the test file first. Tests document the contract better than docstrings.
