@@ -17,7 +17,7 @@ offline-ai-stack/
 ├── logs/        # vLLM, agents (runtime)
 ├── backups/     # restic snapshots (runtime)
 ├── crews/       # CrewAI / LangGraph definitions
-├── skills/      # markdown skill prompts + loader.py
+├── skills/      # 32 markdown skill prompts + loader.py (offline Superpowers)
 └── hf-cache/    # HF model cache (runtime; HF_HOME)
 ```
 
@@ -62,3 +62,30 @@ make qa                                # security scans + pytest
 make ship                              # release plan + go/no-go
 make mem-recall Q="how does auth work" # Claude-MEM recall
 ```
+
+## Skills (offline Superpowers)
+
+`skills/` ships 32 markdown prompts mirroring the obra/superpowers plugin
+plus extras for security, frontend, and ops. Compose them per agent via
+`from skills import inject`:
+
+```python
+from skills import inject
+backend_dev = inject(backend_dev,
+    "test-driven-development",
+    "systematic-debugging",
+    "commit-discipline",
+    "yagni")
+```
+
+| Theme | Skills |
+|---|---|
+| Planning | `brainstorming`, `writing-plans`, `executing-plans`, `architecture-decision-record` |
+| Implementation | `test-driven-development`, `writing-tests`, `avoiding-mocks`, `avoiding-flaky-tests`, `making-changes-incrementally`, `yagni`, `defensive-programming-discipline` |
+| Debugging | `systematic-debugging`, `root-cause-tracing`, `handling-uncertainty`, `handling-failures-and-retries` |
+| Code understanding | `reading-code`, `code-search`, `working-with-legacy-code`, `refactoring` |
+| Collaboration | `pr-review`, `giving-code-review`, `requesting-code-review`, `explaining-changes`, `commit-discipline` |
+| Operations | `incident-response`, `dependency-hygiene`, `security-review` |
+| Multi-agent | `subagent-driven-development`, `dispatching-parallel-agents`, `using-skills-effectively`, `prompt-engineering` |
+| Frontend | `frontend-design` |
+
