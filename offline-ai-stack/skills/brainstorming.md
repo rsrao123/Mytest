@@ -3,42 +3,49 @@
 ## Think first
 - What constraints am I implicitly assuming that aren't actually fixed?
 - Whose perspective am I missing (user, operator, future maintainer, attacker)?
-- What would the contrarian / minimalist / most-ambitious option look like?
-- On which axis (effort, impact, reversibility) does each candidate genuinely differ?
+- Have I covered all 7 archetypes (simple / robust / low-cost / fastest / scalable / unconventional / safest), or am I clustering on one mode?
+- Among the 7 comparison axes (feasibility, cost, complexity, time, maintainability, security, long-term value), which one will actually decide the answer?
 
 ## Reasoning
 For each open problem, produce a divergence trace:
-1. List ≥ 5 distinct directions; explicitly include the obvious, the contrarian, the simplest viable, the most ambitious.
-2. Score each on (effort, impact, reversibility); use coarse buckets (low/med/high), not false precision.
-3. Identify the single axis on which the candidates meaningfully differ — eliminate dominated options.
-4. Surface the strongest two with comparable tradeoffs; do not collapse to one until forced.
+1. Restate the user's goal in one sentence; list known facts, missing facts, and assumptions.
+2. Generate ≥ 7 ideas, one per archetype: **simple**, **robust**, **low-cost**, **fastest**, **scalable**, **unconventional**, **safest**.
+3. For each idea, capture: what it is / how it works / advantages / disadvantages / risks / required tools or resources.
+4. Compare across the 7 axes (feasibility, cost, complexity, time, maintainability, security, long-term value); strike dominated options.
+5. Conclude with a recommendation + one-line "why other options were rejected" + a handoff packet for the writing-plans skill.
 
 ## Plan
 Before recommending:
-1. Generate ≥ 5 directions in one uninterrupted sweep — no evaluation yet.
-2. Score each (effort/impact/reversibility); strike dominated options.
-3. Stop and present the top two with their differing axis; do not collapse to one.
-4. Decide only after the user (or architect) picks the axis they care about.
-Definition of done: top-two surfaced with one named tradeoff axis between them.
-Rollback if: the user's chosen axis isn't on the matrix — restart at step 1 with that axis explicit.
+1. Restate the goal; capture known facts, missing facts, assumptions, and any blocking clarifications.
+2. Generate the 7 archetype ideas in one uninterrupted sweep — no evaluation yet.
+3. Stop and build the per-idea analysis (what / how / advantages / disadvantages / risks / required tools) and the comparison table across all 7 axes.
+4. Surface the recommendation, the rejected alternatives with reasons, and a handoff packet for the writing-plans skill.
+Definition of done: 7 ideas + per-idea analysis + comparison table + recommendation + rejected list + writing-plans handoff packet.
+Rollback if: the user signals an unstated constraint after the recommendation — restart at step 1 with that constraint explicit.
+
+1. Restate the user's goal in one sentence before generating any ideas.
+2. List known facts, missing facts, and assumptions explicitly.
+3. Ask clarification questions only when the task cannot proceed without them.
+4. Generate at least 7 ideas — one per archetype: simple, robust, low-cost, fastest, scalable, unconventional, safest.
+5. For each idea, document what it is, how it works, advantages, disadvantages, risks, and required tools or resources.
+6. Compare all ideas on feasibility, cost, complexity, implementation time, maintainability, security, and long-term value.
+7. Identify hidden risks and failure modes per idea before recommending.
+8. Recommend the best option and explain why each rejected option was rejected.
+9. Convert the recommendation into a handoff packet for the writing-plans skill (goal, chosen approach, constraints, open questions).
+10. Prefer practical offline / local / open-source solutions when relevant; be specific, not generic; never write code at this stage.
 
 ## Validation
 Before recommending, verify:
-1. Direction count ≥ 5; each tagged (obvious / contrarian / minimal / max / other).
-2. Score table present with explicit columns (effort, impact, reversibility).
-3. Top two surfaced; the differing tradeoff axis is named in one line.
-4. No collapse to a single recommendation without a user-chosen axis.
-Pass: count ≥ 5 + scored + top-two + axis named.
-Fail action: return to Plan step 1; convergence happened too early.
+1. ≥ 7 ideas generated, each labeled with one of the named archetypes.
+2. Per-idea analysis present (what / how / advantages / disadvantages / risks / required tools) for every idea.
+3. Comparison table present with all 7 axes as columns.
+4. Recommendation + rejected-alternatives-with-reasons + writing-plans handoff packet all present.
+Pass: 7-archetype coverage + per-idea analysis + 7-axis comparison + recommendation + handoff packet.
+Fail action: return to Plan step 2; the divergence sweep was incomplete.
 
 ## Agentic capabilities
-- **Tools required:** none — pure ideation.
-- **Subagents:** Dispatch a contrarian subagent (higher temperature) to challenge the obvious direction.
-- **Memory writes:** Persist (problem, top 2 directions, chosen tradeoff axis) for future similar problems.
-- **Escalate when:** All 5+ directions look equally weak — re-scope the problem with the user.
-- **Autonomy budget:** Surface top-2 with the tradeoff axis. Choosing one requires a user-named axis.
-
-1. Generate at least 5 distinct directions before evaluating any.
-2. Force variety: include the obvious, the contrarian, the simplest viable, and the most ambitious.
-3. Score each on (a) effort, (b) impact, (c) reversibility.
-4. Surface the strongest two with explicit tradeoffs; do not collapse to a single recommendation prematurely.
+- **Tools required:** none — pure ideation. FileReadTool optional for project-context inputs.
+- **Subagents:** Dispatch a contrarian subagent (higher temperature) to challenge the obvious direction; dispatch a missing-perspective subagent (user / operator / attacker viewpoints).
+- **Memory writes:** Persist (problem, 7 ideas considered, recommended approach, rejected alternatives with reasons, handoff packet) for future similar problems.
+- **Escalate when:** A blocking clarification is required (the task cannot proceed without it) — surface to the user before generating ideas.
+- **Autonomy budget:** Surface recommendation + handoff packet. Final selection and promotion to writing-plans require user or architect sign-off; never auto-promote to implementation.
