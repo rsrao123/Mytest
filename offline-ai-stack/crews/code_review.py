@@ -70,7 +70,8 @@ bug_detector = with_defaults(
         backstory="Adversarial reader. Treats every branch as guilty until proven correct.",
         llm=llm, tools=[file_tool], allow_delegation=False,
     ),
-    "systematic-debugging",
+    # systematic-debugging is in the reasoning baseline; layer root-cause on top.
+    "root-cause-tracing",
 )
 
 git_history_reviewer = with_defaults(

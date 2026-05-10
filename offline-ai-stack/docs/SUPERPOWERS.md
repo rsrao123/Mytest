@@ -659,9 +659,9 @@ with_defaults(release_mgr, "incident-response", "handling-failures-and-retries",
 
 ### 4.1 Heuristics for assembling a bundle
 
-1. **Cap at five skills per agent.** Past that, behavior diverges and
-   prompt budget hurts. The two default-thinking skills (§4.2) count
-   toward this cap, so role-specific skills get the remaining three.
+1. **Cap at seven skills per agent.** Past that, behavior diverges and
+   prompt budget hurts. The four default skills (§4.2) count toward
+   this cap, so role-specific skills get the remaining three.
 2. **Pair every "planner" with `writing-plans`** and every "executor"
    with `executing-plans` on the receiving end.
 3. **Don't mix `defensive-programming-discipline` with `security-review`
@@ -670,33 +670,57 @@ with_defaults(release_mgr, "incident-response", "handling-failures-and-retries",
 4. **Don't load `incident-response` outside incident roles.** It adds
    ceremony that doesn't fit normal workflows.
 
-### 4.2 Default thinking baseline
+### 4.2 Default thinking and reasoning baselines
 
 Every workflow agent in `crews/*.py` is constructed with
 `with_defaults(Agent(...), *role_skills)` rather than the bare
-`inject(...)`. The helper unconditionally prepends two skills to every
-agent's backstory:
+`inject(...)`. The helper unconditionally prepends *two baselines* — a
+thinking baseline (metacognition) and a reasoning baseline (universal
+inference procedures) — before any role-specific skills.
+
+#### Thinking baseline (`BASE_THINKING_SKILLS`)
 
 | Default skill | Why it's a default |
 |---|---|
 | `using-skills-effectively` | Meta-skill: agents that load other skills should know how to compose them. Detects conflicts, caps load count, logs which skill helped. |
 | `handling-uncertainty` | Anti-fabrication: every agent that touches input must surface confidence and avoid inventing facts. The single highest-leverage skill. |
 
-These two were chosen by failure-mode coverage rather than scope. Every
-multi-skill agent risks poor composition (covered by
-`using-skills-effectively`). Every agent that takes input risks silent
-fabrication (covered by `handling-uncertainty`). The other 30 skills are
-role-specific.
+#### Reasoning baseline (`BASE_REASONING_SKILLS`)
 
-**Why enforce defaults rather than rely on convention?** The helper
-removes a class of forget-to-load bugs and centralizes the policy: when
-the baseline changes (e.g., adding `commit-discipline` if every agent
-starts producing commits), it's one edit in `skills/defaults.py`, not 30
-edits across crews. The convention is enforced statically by
-`tests/test_default_thinking.py`:
+| Default skill | Why it's a default |
+|---|---|
+| `reading-code` | Understand before changing. Read tests first, trace one path, match the file's style. Universal because every agent that produces output benefits from understanding the surrounding code — including planner / architect / doc-writer roles that don't write production code directly. |
+| `systematic-debugging` | Hypothesis-driven thinking: expected vs observed, falsifying experiment, no speculation without a test. Universal because every agent occasionally reasons about why something isn't behaving as expected — the doc writer chasing stale docs reasons the same way as the bug hunter chasing a regression. |
 
-- `test_with_defaults_prepends_base_skills` — `with_defaults` actually
-  loads the baseline before role skills.
+These four were chosen by failure-mode coverage rather than scope:
+- **Poor composition** (thinking) — fixed by `using-skills-effectively`.
+- **Silent fabrication** (thinking) — fixed by `handling-uncertainty`.
+- **Changing what you don't understand** (reasoning) — fixed by `reading-code`.
+- **Jumping to a conclusion without a test** (reasoning) — fixed by `systematic-debugging`.
+
+The other 28 skills are role-specific.
+
+#### Composition order and dedupe
+
+`with_defaults` loads in this order:
+1. `BASE_THINKING_SKILLS` (in declaration order)
+2. `BASE_REASONING_SKILLS` (in declaration order)
+3. role-specific skills, *minus any that duplicate a baseline skill*
+
+The dedupe lets a call site write `with_defaults(agent, "systematic-debugging", "code-search")` even though `systematic-debugging` is in the reasoning baseline — the duplicate is dropped silently. This keeps the call sites focused on *what's additional* without needing to know what's in the baseline.
+
+#### Why enforce defaults rather than rely on convention?
+
+The helper removes a class of forget-to-load bugs and centralizes the
+policy: when the baseline changes (e.g., adding `commit-discipline` if
+every agent starts producing commits), it's one edit in
+`skills/defaults.py`, not 30 edits across crews. The convention is
+enforced statically by `tests/test_default_thinking.py`:
+
+- `test_base_thinking_skills_are_named` / `test_base_reasoning_skills_are_named` — the baselines aren't silently mutated.
+- `test_baselines_do_not_overlap` — the two baselines stay disjoint.
+- `test_with_defaults_loads_thinking_then_reasoning_then_role` — the load order is correct end-to-end.
+- `test_with_defaults_dedupes_role_against_thinking_baseline` / `..._reasoning_baseline` — duplicates are dropped silently.
 - `test_crew_imports_with_defaults` — every file under `crews/`
   imports the helper.
 - `test_crew_does_not_use_bare_inject` — no `inject(Agent(...))` call
@@ -704,10 +728,11 @@ edits across crews. The convention is enforced statically by
 - `test_every_agent_in_crew_is_wrapped` — every `Agent(...)` constructor
   is wrapped, by count match between `Agent(` and `with_defaults(`.
 
-**Changing the baseline.** Edit `BASE_THINKING_SKILLS` in
-`skills/defaults.py` and re-run `pytest tests/`. The tests will fail if
+**Changing a baseline.** Edit `BASE_THINKING_SKILLS` or
+`BASE_REASONING_SKILLS` in `skills/defaults.py` and re-run
+`pytest tests/`. The tests will fail if the named baseline drifts or if
 the new baseline isn't reachable through `with_defaults` from every
-agent. Bumping the baseline is intentionally easy *and* loud — easy so
+agent. Bumping a baseline is intentionally easy *and* loud — easy so
 the team can iterate on what's universal, loud so a baseline change is
 visible in every PR that touches it.
 

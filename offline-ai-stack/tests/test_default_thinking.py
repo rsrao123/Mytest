@@ -15,39 +15,75 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from skills import BASE_THINKING_SKILLS, with_defaults  # noqa: E402
+from skills import BASE_REASONING_SKILLS, BASE_THINKING_SKILLS, with_defaults  # noqa: E402
 
 
 # ----- Unit tests for the helper itself --------------------------------
 
 def test_base_thinking_skills_are_named():
-    """The baseline must include the two universal-default skills."""
+    """The thinking baseline must include the two universal-default skills."""
     assert BASE_THINKING_SKILLS == ("using-skills-effectively", "handling-uncertainty")
 
 
-def test_with_defaults_prepends_base_skills():
-    """`with_defaults` must load BASE_THINKING_SKILLS *before* role skills."""
+def test_base_reasoning_skills_are_named():
+    """The reasoning baseline must include the two universal-default skills."""
+    assert BASE_REASONING_SKILLS == ("reading-code", "systematic-debugging")
+
+
+def test_baselines_do_not_overlap():
+    """A skill in both baselines would be a redundancy bug."""
+    assert set(BASE_THINKING_SKILLS).isdisjoint(set(BASE_REASONING_SKILLS))
+
+
+def test_with_defaults_loads_thinking_then_reasoning_then_role():
+    """`with_defaults` must load thinking → reasoning → role in that order."""
     agent = SimpleNamespace(backstory="base")
     returned = with_defaults(agent, "writing-plans")
     assert returned is agent
     body = agent.backstory
-    # All three skills present.
+    # All five skills present.
     assert "# Skill: Using Skills Effectively" in body
     assert "# Skill: Handling Uncertainty" in body
+    assert "# Skill: Reading Code" in body
+    assert "# Skill: Systematic Debugging" in body
     assert "# Skill: Writing Plans" in body
-    # Order: defaults precede the role skill.
-    base_idx = body.index("# Skill: Using Skills Effectively")
-    uncert_idx = body.index("# Skill: Handling Uncertainty")
-    role_idx = body.index("# Skill: Writing Plans")
-    assert base_idx < uncert_idx < role_idx
+    # Order: thinking baseline first, then reasoning, then role.
+    think1 = body.index("# Skill: Using Skills Effectively")
+    think2 = body.index("# Skill: Handling Uncertainty")
+    reason1 = body.index("# Skill: Reading Code")
+    reason2 = body.index("# Skill: Systematic Debugging")
+    role = body.index("# Skill: Writing Plans")
+    assert think1 < think2 < reason1 < reason2 < role
 
 
 def test_with_defaults_works_with_no_role_skills():
-    """An agent with only the baseline must still get both default skills."""
+    """An agent with only the baseline must still get all four default skills."""
     agent = SimpleNamespace(backstory="")
     with_defaults(agent)
-    assert "# Skill: Using Skills Effectively" in agent.backstory
-    assert "# Skill: Handling Uncertainty" in agent.backstory
+    for marker in (
+        "# Skill: Using Skills Effectively",
+        "# Skill: Handling Uncertainty",
+        "# Skill: Reading Code",
+        "# Skill: Systematic Debugging",
+    ):
+        assert marker in agent.backstory
+
+
+def test_with_defaults_dedupes_role_against_thinking_baseline():
+    """A role skill that's already in the thinking baseline must be dropped silently."""
+    agent = SimpleNamespace(backstory="")
+    with_defaults(agent, "using-skills-effectively", "writing-plans")
+    # Should appear exactly once (from the baseline), not twice.
+    assert agent.backstory.count("# Skill: Using Skills Effectively") == 1
+    assert agent.backstory.count("# Skill: Writing Plans") == 1
+
+
+def test_with_defaults_dedupes_role_against_reasoning_baseline():
+    """A role skill that's already in the reasoning baseline must be dropped silently."""
+    agent = SimpleNamespace(backstory="")
+    with_defaults(agent, "systematic-debugging", "code-search")
+    assert agent.backstory.count("# Skill: Systematic Debugging") == 1
+    assert agent.backstory.count("# Skill: Code Search") == 1
 
 
 # ----- Enforcement: every crew uses with_defaults ----------------------

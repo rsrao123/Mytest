@@ -99,7 +99,8 @@ bug_hunter = with_defaults(
         tools=[file_tool],
         allow_delegation=False,
     ),
-    "systematic-debugging", "root-cause-tracing", "code-search",
+    # systematic-debugging is in the reasoning baseline.
+    "root-cause-tracing", "code-search", "pr-review",
 )
 
 security_reviewer = with_defaults(
@@ -123,7 +124,8 @@ perf_reviewer = with_defaults(
         tools=[file_tool],
         allow_delegation=False,
     ),
-    "pr-review", "systematic-debugging", "code-search",
+    # systematic-debugging is in the reasoning baseline.
+    "pr-review", "code-search", "root-cause-tracing",
 )
 
 qa_engineer = with_defaults(
@@ -159,7 +161,8 @@ doc_writer = with_defaults(
         tools=[dir_tool, file_tool],
         allow_delegation=False,
     ),
-    "explaining-changes", "architecture-decision-record", "reading-code",
+    # reading-code is in the reasoning baseline.
+    "explaining-changes", "architecture-decision-record", "writing-plans",
 )
 
 
