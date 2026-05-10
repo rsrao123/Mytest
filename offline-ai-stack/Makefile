@@ -4,15 +4,22 @@ CREWS := $(STACK)/crews
 SCRIPTS := $(STACK)/scripts
 PROJECT ?= $(shell basename $$(pwd))
 
-.PHONY: help offline-prep os-harden offline-doctor offline-doctor-strict airgap-test hf-audit \
+.PHONY: help offline-prep stage-bundle import-bundle os-harden \
+        offline-doctor offline-doctor-strict airgap-test hf-audit \
         bring-up tear-down compose-up compose-down ingest voice \
         plan-ceo-review plan-eng-review plan-design-review plan-all-reviews \
         review security-review qa ship mem-recall eval
 
 help:
-	@echo "Targets:"
-	@echo "  offline-prep        One-shot: pre-cache scanner DBs, models, telemetry-off"
-	@echo "  os-harden           sudo: mask Ubuntu's NTP / snap / unattended-upgrades / whoopsie / apport"
+	@echo "Two-machine air-gapped flow:"
+	@echo "  STAGING (connected machine):"
+	@echo "    offline-prep        Pre-cache scanner DBs, models, docker images, telemetry-off"
+	@echo "    stage-bundle        Bundle everything into BUNDLE_DIR for transfer to air-gapped target"
+	@echo "  TARGET (air-gapped machine):"
+	@echo "    import-bundle BUNDLE=<dir>   Consume the bundle; no internet needed"
+	@echo "    os-harden           sudo: mask Ubuntu's NTP / snap / unattended-upgrades / whoopsie / apport"
+	@echo ""
+	@echo "Verification (run on target):"
 	@echo "  hf-audit            Structural: every model present + no repo-ID surprises in runtime code"
 	@echo "  offline-doctor      Observed: passive 30s probe for non-loopback egress"
 	@echo "  offline-doctor-strict  Adversarial: iptables blocks egress during a 30s probe (sudo)"
@@ -56,6 +63,13 @@ voice:
 
 offline-prep:
 	bash $(SCRIPTS)/offline-prep.sh
+
+stage-bundle:
+	bash $(SCRIPTS)/stage-bundle.sh
+
+import-bundle:
+	@test -n "$(BUNDLE)" || (echo "Set BUNDLE=/path/to/bundle-dir" && exit 2)
+	bash $(SCRIPTS)/import-bundle.sh $(BUNDLE)
 
 offline-doctor:
 	bash $(SCRIPTS)/offline-doctor.sh --probe-workload 30

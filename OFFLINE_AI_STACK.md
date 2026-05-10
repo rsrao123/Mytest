@@ -78,33 +78,98 @@ or an equivalent non-HF engine.
 - no runtime Python code references HF repo IDs *except* as vLLM service-name aliases
 - no runtime Python file imports `huggingface_hub`
 
-### Full operator checklist
+### Two-machine air-gapped flow (target never sees the internet)
+
+The target machine has **no internet at all** — files arrive via removable
+media. We use a staging machine (any Linux workstation with internet) to
+build a portable bundle, then import it on the target.
+
+```
+┌─────────────────────────┐                   ┌─────────────────────────┐
+│ STAGING (has internet)  │                   │ TARGET (air-gapped)     │
+│                         │                   │                         │
+│ sudo apt install ...    │                   │ sudo apt install ...    │
+│ pip install -r req.txt  │                   │ (from local apt mirror, │
+│ make offline-prep       │                   │  or pre-installed)      │
+│ make stage-bundle       │  USB / DVD /      │                         │
+│   ↓                     │  removable drive  │ make import-bundle      │
+│ offline-ai-stack-       │ ─────────────────►│   BUNDLE=/mnt/usb/...   │
+│ bundle-YYYYMMDD/        │                   │   ↓                     │
+│ (~110 GB)               │                   │ sudo make os-harden     │
+│                         │                   │ sudo reboot             │
+│                         │                   │ make bring-up           │
+│                         │                   │ sudo make airgap-test   │
+└─────────────────────────┘                   └─────────────────────────┘
+```
+
+#### On STAGING (one-time, with internet)
 
 ```bash
-# --- One time, with internet ---
-sudo apt install -y curl wget git python3.11 docker.io docker-compose-v2 \
-                    iptables bandit semgrep gitleaks
+sudo apt install -y curl wget git python3.11 python3.11-venv \
+                    docker.io docker-compose-v2 iptables \
+                    bandit semgrep gitleaks rsync
+python3.11 -m venv ~/ai-stack && source ~/ai-stack/bin/activate
 pip install -r offline-ai-stack/requirements.txt
 
-# Stack-level prep (downloads models, caches scanner DBs, sets telemetry-off)
+# Authenticate for gated models (Devstral, Llama, etc.)
+huggingface-cli login
+
+# Downloads models + scanner DBs + docker images, sets telemetry-off
 make offline-prep
+
+# Bundles everything for transfer (~110 GB without large coding models,
+# ~200 GB with them all). Output is a DIRECTORY at $HOME/offline-ai-stack-
+# bundle-YYYYMMDD/. Tar it yourself if you want a single file for transport.
+make stage-bundle
+```
+
+What `stage-bundle` packages:
+- `models/`         — every model directory, plain local-dir layout
+- `cache/`          — trivy CVE DB, OSV mirror, semgrep rules
+- `docker-images/`  — every required image as a `.tar` (`docker save`)
+- `wheels/`         — every Python dep from `requirements.txt`, built for `manylinux2014_x86_64` + Python 3.11
+- `offline-ai-stack/` — the repo itself (without runtime data dirs)
+- `MANIFEST.txt`    — sizes + sha256 of image tarballs
+
+#### Transfer the bundle to the target
+
+`rsync`, `cp -r`, `tar -cf bundle.tar` + USB, data diode — whatever fits
+your air-gap rules.
+
+#### On the air-gapped TARGET
+
+```bash
+# Prerequisites that must exist already (from your air-gapped OS image or
+# a local apt mirror): docker, python3.11, iptables, rsync.
+# The bundle does NOT carry apt packages.
+
+# Import the bundle. No internet needed at any step.
+make import-bundle BUNDLE=/mnt/usb/offline-ai-stack-bundle-YYYYMMDD
 
 # OS-level lockdown (masks Ubuntu's NTP / snap / unattended-upgrades /
 # whoopsie / apport / popularity-contest / canonical-livepatch / cloud-init)
 sudo make os-harden
 sudo reboot
 
-# --- After reboot, with the stack up ---
+# After reboot, activate the venv that import-bundle created (or your own)
+source ~/ai-stack/bin/activate
 make bring-up
 
-# Three-tier verification, weakest first:
+# Four-tier verification, weakest first:
 make hf-audit                   # STRUCTURAL: every model present, no repo-ID surprises in code
 make offline-doctor             # OBSERVED:   passive 30s probe; reports non-loopback ESTAB sockets
 sudo make offline-doctor-strict # ADVERSARIAL: 30s with iptables blocking egress
 sudo make airgap-test           # HARDEST:    full 90s smoke under kernel-level OUTPUT drop
-
-# Disconnect the network. Continue using the stack normally.
 ```
+
+If `airgap-test` returns PASS, the box is provably surviving without network.
+
+#### Refreshing the bundle (~90 days)
+
+CVE / OSV data ages. To refresh: re-run `make offline-prep && make stage-bundle`
+on staging, transfer the new bundle, `make import-bundle BUNDLE=...` on
+target. Existing models / docker images that haven't changed are skipped
+via `rsync` delta transfer.
 
 ### What each verification catches
 
