@@ -1,0 +1,23 @@
+steps:
+  test:
+    image: python:3.11
+    commands:
+      - pip install -r requirements.txt
+      - pytest
+
+  security:
+    image: python:3.11
+    commands:
+      - bash scripts/security_scan.sh
+
+  ai_review:
+    image: python:3.11
+    commands:
+      - pip install langgraph langchain-openai
+      - python crews/merge_gate.py change.diff
+
+  eval:
+    image: node:20
+    commands:
+      - npm i -g promptfoo
+      - promptfoo eval

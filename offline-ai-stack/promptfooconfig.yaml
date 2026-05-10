@@ -1,0 +1,21 @@
+providers:
+  - id: openai:chat:Qwen/Qwen3-Coder-Next
+    config:
+      apiBaseUrl: http://localhost:8000/v1
+      apiKey: local
+  - id: openai:chat:mistralai/Devstral-Small-2-24B-Instruct-2512
+    config:
+      apiBaseUrl: http://localhost:8001/v1
+      apiKey: local
+
+tests:
+  - vars:
+      task: "Fix race condition in worker pool (Python)."
+    assert:
+      - type: llm-rubric
+        value: "Patch is correct, minimal, includes a regression test."
+  - vars:
+      task: "Refactor duplicate auth checks across 3 routes into middleware."
+    assert:
+      - type: llm-rubric
+        value: "Single middleware applied; behavior preserved; tests updated."

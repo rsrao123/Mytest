@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Wrap aider so memory recall is auto-injected.
+PROJECT="$(basename "$(pwd)")"
+QUERY="${1:-current task}"
+CTX=$(python "$HOME/offline-ai-stack/scripts/claude_mem_local.py" recall "$PROJECT" "$QUERY")
+echo "$CTX" > /tmp/aider-context.md
+aider --read /tmp/aider-context.md --model openai/Qwen/Qwen3-Coder-Next "$@"

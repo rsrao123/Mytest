@@ -1,0 +1,19 @@
+[Unit]
+Description=vLLM Qwen3-Coder-Next
+After=network.target nvidia-persistenced.service
+
+[Service]
+Type=simple
+User=cemilac
+Environment=HF_HOME=/home/cemilac/offline-ai-stack/hf-cache
+ExecStart=/home/cemilac/ai-stack/bin/vllm serve Qwen/Qwen3-Coder-Next \
+  --host 0.0.0.0 --port 8000 --max-model-len 262144 \
+  --gpu-memory-utilization 0.55 --enable-auto-tool-choice \
+  --tool-call-parser hermes
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/cemilac/offline-ai-stack/logs/vllm-primary.log
+StandardError=append:/home/cemilac/offline-ai-stack/logs/vllm-primary.err
+
+[Install]
+WantedBy=multi-user.target

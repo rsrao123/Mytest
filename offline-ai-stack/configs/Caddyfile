@@ -1,0 +1,15 @@
+{
+  auto_https off
+}
+
+ai.local:80 {
+  basicauth {
+    you $2a$14$REPLACE_WITH_BCRYPT_HASH
+  }
+  reverse_proxy localhost:3001
+}
+
+git.local:80    { reverse_proxy localhost:3002 }
+ci.local:80     { reverse_proxy localhost:8003 }
+trace.local:80  { reverse_proxy localhost:3000 }
+search.local:80 { reverse_proxy localhost:8888 }
