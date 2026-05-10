@@ -22,6 +22,15 @@ For each behavior change:
 Definition of done: red → green → full-suite-green → refactor-green → commit, in order.
 Rollback if: full suite goes red after step 2 — revert your change; the test alone didn't catch a regression.
 
+## Validation
+Before committing, verify:
+1. The failing test was committed before the production code (or the order is captured in the PR).
+2. The failing test failed for the right reason (recorded reproduction line).
+3. The full test suite is green post-change.
+4. The refactor commit is separate from the green commit.
+Pass: TDD order + right-reason fail + full-green + isolated refactor commit.
+Fail action: rebase to restore the order; or, if order isn't recoverable, rewrite the PR description.
+
 1. Write the failing test first; do not write implementation code yet.
 2. Run the test and confirm it fails for the expected reason (not import error).
 3. Write the minimum code to make it pass.

@@ -22,6 +22,15 @@ Before pushing the branch:
 Definition of done: every commit compiles + tests green + total diff < 200 lines net.
 Rollback if: a commit breaks `git bisect` — revert it before continuing the chain.
 
+## Validation
+Before requesting review, verify:
+1. `git log --oneline base..HEAD` shows commits in structural-then-behavior order.
+2. Net diff < 200 lines; if larger, the description justifies it.
+3. `git bisect run` succeeds across the chain; every commit compiles + tests green.
+4. For risky behavior changes, the flag-off path is in a separate landed PR.
+Pass: order + size + bisectable + flag-off-first.
+Fail action: rebase to split; rerun bisect.
+
 1. Aim for small, reviewable diffs (≤ ~200 lines net). Bigger diffs hide mistakes and stall reviews.
 2. Land structural changes first (renames, extracts, moves), then behavior changes — never bundle them.
 3. Each commit must compile and pass tests. The chain should be `git bisect`-able.

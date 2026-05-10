@@ -22,6 +22,15 @@ Before fanning out:
 Definition of done: all subagent outputs merged + cross-cutting tests green.
 Rollback if: a write conflict appears at merge — sequence the conflicting subtasks; do not silently force-merge.
 
+## Validation
+After fan-out completes, verify:
+1. The file-scope table shows zero overlap between subagents.
+2. Each subagent's output passed its self-review check.
+3. Cross-cutting integration tests are green post-merge.
+4. Any conflicts were arbitrated by the architect, not silent-merged.
+Pass: scopes disjoint + self-reviews passed + integration green + conflicts logged.
+Fail action: sequence the conflicting subtasks and rerun.
+
 When subtasks are independent (no shared file writes):
 - Dispatch them concurrently via CrewAI Process.parallel or asyncio.gather.
 - Set explicit non-overlapping file scopes per agent.

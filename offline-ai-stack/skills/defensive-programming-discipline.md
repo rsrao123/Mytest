@@ -21,6 +21,15 @@ For each candidate check:
 4. Definition of done: one validation per boundary; no duplicate upstream/downstream checks.
 Rollback if: a redundant check gets re-added in review — escalate to the architect for a project-wide policy decision.
 
+## Validation
+For each landed check, verify:
+1. It's located at a documented trust boundary (HTTP / queue / IO / FFI).
+2. No duplicate validation upstream or downstream of it.
+3. An adversarial-input fixture test exists and passes.
+4. Catch-and-log blocks have a named exception type (no bare `except:`).
+Pass: all 4 checks green per landed check.
+Fail action: remove duplicates; convert internal-call checks to assertions or delete.
+
 Defensive checks have a cost: they hide bugs and inflate code. Use them where they earn their keep.
 
 1. **Validate at boundaries** (HTTP, queue, file I/O, FFI). Trust internal calls.

@@ -22,6 +22,15 @@ Before shipping any prompt:
 Definition of done: eval pass-rate ≥ baseline + schema validated against examples.
 Rollback if: eval regresses on the existing test set — revert the prompt change; do not ship.
 
+## Validation
+Before merging the prompt, verify:
+1. Eval pass-rate ≥ baseline on the existing test set.
+2. Output schema validated against the example outputs.
+3. Hard constraints separated from preferences in the prompt body.
+4. Negative example present (what NOT to produce).
+Pass: ≥ baseline + schema valid + constraints separated + negative example present.
+Fail action: revert; iterate offline before re-merging.
+
 1. State the task in one sentence at the top.
 2. Provide 1–3 positive examples and 1 negative example (what NOT to produce).
 3. Specify the output schema explicitly (JSON keys, markdown structure, max length).

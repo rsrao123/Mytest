@@ -22,6 +22,15 @@ For each fallible call:
 Definition of done: 4 paths covered (success / permanent / transient-eventual / budget-exhausted) + typed final error.
 Rollback if: retries cause duplicate side-effects in production — make the operation idempotent first, then re-enable retries.
 
+## Validation
+After the implementation lands, verify:
+1. Tests cover all 4 paths (success / permanent / transient-eventual / budget-exhausted).
+2. Final-error type is named and documented in the public API.
+3. Each retry log line includes attempt #, delay, reason.
+4. The operation is idempotent OR an idempotency key is enforced.
+Pass: 4 paths + typed error + structured logs + idempotency.
+Fail action: return to Plan step 1; idempotency missing means retries unsafe.
+
 1. **Classify before retrying.** Transient (network blip, 503) → retry. Permanent (400, 401, 422) → don't.
 2. Every retry needs a budget: max attempts AND max total time. Unbounded retries are an outage.
 3. Exponential backoff with full jitter (`random.uniform(0, base * 2**n)`) — fixed sleeps cause thundering herds.

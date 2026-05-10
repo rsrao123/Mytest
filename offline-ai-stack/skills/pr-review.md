@@ -22,6 +22,15 @@ For each PR:
 Definition of done: all 6 dimensions audited + verdict posted with file:line evidence.
 Rollback if: the review uncovers an architectural problem — escalate to the architect; don't try to fix it in this PR.
 
+## Validation
+Before posting, verify:
+1. All 6 dimensions (correctness / tests / security / perf / style / docs) are covered.
+2. Every finding has a file:line anchor.
+3. A verdict (APPROVE / REQUEST_CHANGES / BLOCK) is stated explicitly.
+4. The top blocker is named (if any) so the author knows what to fix first.
+Pass: 6 dimensions + anchors + verdict + top blocker.
+Fail action: complete the missed dimension before posting.
+
 For each PR, audit in this order and report findings with file:line refs.
 
 1. **Correctness** — does it do what the description claims? Edge cases? Off-by-ones?

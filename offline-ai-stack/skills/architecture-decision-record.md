@@ -21,6 +21,15 @@ Before declaring the ADR Accepted:
 4. Definition of done: Status: Accepted on the file + linked from the PR.
 Rollback if: a missed hard constraint surfaces post-acceptance — supersede with a new ADR; never edit the old one.
 
+## Validation
+Before declaring the ADR Accepted, verify:
+1. Status line says "Accepted" (not "Proposed").
+2. The implementing PR links the ADR file path.
+3. Each Consequences bullet is observable (not aspirational).
+4. The Alternatives section names ≥ 2 rejected options with reasons.
+Pass: all 4 checks green + the ADR is discoverable from `docs/adr/`.
+Fail action: return to Plan step 1; circulate the draft for the missed dimension.
+
 Use this template for every non-trivial architectural choice. File it under `docs/adr/NNNN-title.md`.
 
 ```

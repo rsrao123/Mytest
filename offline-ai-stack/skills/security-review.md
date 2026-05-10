@@ -22,6 +22,15 @@ For each finding:
 Definition of done: severity + class + smallest fix + triage decision recorded per finding.
 Rollback if: the "smallest fix" hides the issue without closing it — escalate; pick a structural fix.
 
+## Validation
+Before triage decision, verify per finding:
+1. Each finding has SEVERITY + FILE:LINE + EXPLOIT + FIX recorded.
+2. Vuln class named (one of the 10 listed below).
+3. Triage decision (block / ship-with-followup) is explicit.
+4. Reproducer attached for HIGH and CRITICAL findings.
+Pass: schema complete + class named + triage explicit + reproducer for HIGH+.
+Fail action: gather missing evidence before triage; do not approve incomplete findings.
+
 Audit the code for these specific vulnerability classes. For each finding, report:
 SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 

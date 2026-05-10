@@ -22,6 +22,15 @@ Loop until reproduced and fixed:
 Definition of done: deterministic reproduction + fix + regression test landed.
 Rollback if: 3 hypotheses fail in a row — re-read the relevant code; speculation isn't working.
 
+## Validation
+Before declaring fixed, verify:
+1. Reproducer runs deterministically on the failing input.
+2. Hypotheses + falsification outcomes are recorded in the bug notes.
+3. The fix targets the root cause; any symptom-level fix is marked as tactical.
+4. Regression test added.
+Pass: deterministic repro + record + cause-targeted fix + regression test.
+Fail action: re-read the relevant code; speculation needs another reset before the next attempt.
+
 1. State the expected behavior precisely.
 2. State the observed behavior precisely.
 3. Form a hypothesis. Predict what would prove it wrong.

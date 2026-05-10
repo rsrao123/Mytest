@@ -22,6 +22,15 @@ For each refactor:
 Definition of done: green-pre + green-post + isolated commit.
 Rollback if: tests fail post-change — revert the structural change; the refactor wasn't behavior-preserving.
 
+## Validation
+Before pushing, verify:
+1. Test suite was green pre-change (recorded in PR description).
+2. Test suite is green post-change.
+3. Commit subject prefixed `refactor:`; no behavior changes appear in the diff.
+4. The commit stands alone — no feature / fix / docs work bundled.
+Pass: green-pre + green-post + isolated + behavior-preserving.
+Fail action: revert; the refactor wasn't safe.
+
 Tidy First. Behavior-preserving changes only.
 
 1. Separate refactor commits from feature commits. Never mix.

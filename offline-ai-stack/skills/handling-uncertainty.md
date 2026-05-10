@@ -22,6 +22,15 @@ Before producing any fact-bearing output:
 Definition of done: every fact in the output is known + cited, or explicitly flagged as unverified.
 Rollback if: a fabricated fact slips through to delivery — file an explicit correction immediately.
 
+## Validation
+Before returning output, verify:
+1. Every fact is tagged: known (with citation) / inferred / unverified.
+2. No filenames / API shapes / version numbers appear without a citation or "unverified" marker.
+3. Outstanding uncertainties are surfaced to the user explicitly.
+4. No fabricated detail in the final output.
+Pass: every fact tagged + 0 fabrications + uncertainties surfaced.
+Fail action: file a correction; identify the cited source for each unverified fact, or remove it.
+
 1. State your confidence explicitly. "I'm sure" / "I think" / "I'm guessing" are different signals — surface them.
 2. When you're guessing, run the cheapest experiment that converts the guess into knowledge before acting.
 3. If you can't experiment cheaply, ask. One clarifying question now beats one rolled-back PR later.

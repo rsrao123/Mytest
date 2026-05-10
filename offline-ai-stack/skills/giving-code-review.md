@@ -22,6 +22,15 @@ Before posting:
 Definition of done: verdict + tagged comments + lead-with-good present.
 Rollback if: review takes > 30 minutes — the diff is too big; ask for a split rather than continuing.
 
+## Validation
+Before posting, verify:
+1. One concrete "what's good" comment leads the review.
+2. Every comment tagged BLOCKER / nit / question.
+3. No comment targets pre-existing code untouched by the diff.
+4. Single verdict (APPROVE / REQUEST_CHANGES / BLOCK) at the bottom; top blocker named if any.
+Pass: lead-with-good + tags + scope + verdict.
+Fail action: trim to in-scope comments; restate the verdict; post.
+
 1. Lead with what's good. Reviewers who only flag faults get tuned out.
 2. Distinguish blocking from non-blocking comments explicitly: prefix with `nit:`, `q:`, or `BLOCKER:`.
 3. Suggest, don't dictate. "Consider X because Y" beats "do X".

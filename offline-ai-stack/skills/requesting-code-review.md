@@ -22,6 +22,15 @@ Before pinging a reviewer:
 Definition of done: clean self-review + answered-in-advance description + one PR per concern.
 Rollback if: the reviewer asks something obvious — the description failed; rewrite it before resuming review.
 
+## Validation
+Before pinging the reviewer, verify:
+1. Linters + formatters + full test suite all green locally.
+2. The description pre-empts the obvious questions; "I considered X but…" present where relevant.
+3. The PR contains exactly one concern; no hidden refactors / cleanups.
+4. Draft status is used if any path isn't ready for behavior review.
+Pass: green + pre-emptive + single concern + draft-state-correct.
+Fail action: fix locally and rewrite description; don't burn reviewer time.
+
 1. Self-review first. Run the diff through your own eyes and the linters before paging anyone.
 2. Write the description so the reviewer can pick it up cold: what + why + how to verify.
 3. Pre-empt the obvious questions in the description ("I considered X but chose Y because…").

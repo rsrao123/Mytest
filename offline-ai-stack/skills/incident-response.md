@@ -23,6 +23,15 @@ Run these phases in order:
 Definition of done: incident closed + postmortem published + action items tracked.
 Rollback if: the fix worsens the incident — invoke the stabilize-action recorded in step 1; resume diagnosis.
 
+## Validation
+At incident closure, verify:
+1. Stabilizing action timestamped in the incident channel.
+2. Hypothesis + falsification record present in the timeline.
+3. Root-cause fix landed with a regression alert or test.
+4. Postmortem published within 48h with action items + owners + due dates.
+Pass: all 4 artifacts present and linked from the incident record.
+Fail action: keep the incident open; complete the missing artifact before closure.
+
 Stabilize → Diagnose → Fix → Postmortem.
 
 1. **Stabilize first.** Roll back, disable the feature flag, or scale up — whatever stops user pain. Diagnosis comes after.

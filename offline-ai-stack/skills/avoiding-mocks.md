@@ -21,6 +21,15 @@ Before writing the test:
 4. Definition of done: zero `mock.patch` on code we own; fakes have inline justification.
 Rollback if: the fake's contract diverges from the real dep — fix the contract, don't paper over it.
 
+## Validation
+After writing the test, verify:
+1. `grep -n "mock.patch\|@patch" the_test_file` returns 0 hits on code we own.
+2. Any fakes are documented inline with a one-line behavioral contract.
+3. Boundary mocks (HTTP / SDK) are scoped via `with patch(...) as m:`, not module-level.
+4. The test passes against the real component when run in integration mode.
+Pass: 0 owned-code mocks + fakes documented + boundary mocks scoped + integration green.
+Fail action: refactor to use real or fake; do not relax the rule.
+
 Default: don't mock. Mocks couple tests to implementation and rot fast.
 
 1. **Real things first.** Use the real DB (sqlite/test container), real filesystem (tmpdir), real clock when ±1s is fine.

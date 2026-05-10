@@ -22,6 +22,15 @@ Before changing legacy code:
 Definition of done: characterized + refactored + feature, in three commits minimum, each green.
 Rollback if: characterization tests fail during refactor — the refactor changed behavior; revert the structural change.
 
+## Validation
+Before pushing, verify:
+1. Characterization tests landed in their own commit.
+2. Refactor commit landed in its own commit, green pre and post.
+3. Feature commit landed in its own commit on top of the refactor.
+4. Git log/blame on touched lines was reviewed and noted in the PR.
+Pass: 3 isolated commits + history review.
+Fail action: rebase to split; the bundle is not acceptable for legacy code.
+
 1. Characterize before you change. Add tests that pin current behavior — *especially* the weird parts. Those are the contract.
 2. Don't refactor and feature-add in the same PR. Sequence: characterize → refactor under green tests → add feature.
 3. Resist the urge to rewrite. Rewrites underestimate the implicit knowledge encoded in the existing code.

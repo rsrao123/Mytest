@@ -22,6 +22,15 @@ For each bug:
 Definition of done: cause named + ≥ 3 "why" levels documented + regression test landed.
 Rollback if: another instance of the same cause appears post-fix — the fix was at the wrong layer; redo the trace.
 
+## Validation
+Before declaring fixed, verify:
+1. The reproducer is deterministic (100/100 on the failing input).
+2. ≥ 3 levels of "why" recorded in the bug notes.
+3. At least one search for sibling symptoms attempted and findings noted.
+4. Regression test pins the *cause*, not just the symptom location.
+Pass: deterministic repro + 3+ whys + sibling search + cause-pinning test.
+Fail action: redo the trace; the fix was at the wrong layer.
+
 1. Don't fix at the first plausible layer. Ask "why" until the answer stops surprising you (≥3 levels deep).
 2. Reproduce the bug with the smallest possible input. If you can't reproduce, you don't understand it.
 3. Stack traces lie about *cause* but tell the truth about *location*. Use them to bisect, not to diagnose.

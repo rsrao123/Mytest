@@ -22,6 +22,15 @@ At task start:
 Definition of done: primary skill named at start + post-task log entry.
 Rollback if: a loaded skill conflicts mid-task — pause, resolve at the meta level, restart from step 1.
 
+## Validation
+After the task, verify:
+1. Primary skill named at task start (recorded in the agent's own log).
+2. ≤ 3 skills loaded total; conflicts (if any) were resolved.
+3. Post-task entry recorded which skill helped and which didn't.
+4. New skill needs (if any) filed as proposals for the next round.
+Pass: primary + cap + log + proposals filed.
+Fail action: trim the loaded skill set next time; over-composition is the default failure mode.
+
 1. Load skills *before* you start the task, not mid-stream — the skill changes how you'd plan.
 2. Compose narrowly: pick the 2–3 skills that match the task, not all of them. Noise drowns signal.
 3. Skills override defaults; if a skill conflicts with another instruction, name the conflict explicitly and pick one.

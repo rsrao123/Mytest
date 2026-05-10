@@ -22,6 +22,15 @@ For tasks > ~50 LOC:
 Definition of done: all subagent outputs integrated + cross-cutting tests green.
 Rollback if: subagent outputs conflict at merge — escalate to architect; do not silently force-merge.
 
+## Validation
+After integration, verify:
+1. The file-scope table for subagents shows 0 overlaps.
+2. Each subagent returned diff + rationale + self-review.
+3. Cross-cutting integration tests are green.
+4. Architect approved the decomposition (decision recorded).
+Pass: scopes + outputs + tests + architect sign-off.
+Fail action: sequence overlapping subagents; rerun with the architect's revised decomposition.
+
 For tasks larger than ~50 LOC of changes:
 1. Decompose into independent subtasks.
 2. Spawn a focused subagent per subtask with a tightly scoped prompt and only the files it needs.

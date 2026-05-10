@@ -21,6 +21,15 @@ Before merging the test:
 4. Definition of done: 100/100 passes locally + zero unseeded RNG + zero `time.sleep > 100ms`.
 Rollback if: any single flake post-merge — quarantine within 24h and reopen the trace.
 
+## Validation
+After landing the test, verify:
+1. CI pass rate ≥ 100/100 over a forced rerun matrix.
+2. `grep -n "time.sleep" the_test_file` returns 0 hits, or every hit is < 100ms.
+3. Every random source has an explicit seed; every clock is frozen via fixture.
+4. The test name encodes the scenario it pins down.
+Pass: 100/100 + no unbounded sleep + seeded RNG + frozen clock.
+Fail action: quarantine immediately; return to Plan step 1 with the residual nondeterminism named.
+
 A flaky test is worse than no test — it trains the team to ignore failures.
 
 Sources of flakiness, in order of frequency:

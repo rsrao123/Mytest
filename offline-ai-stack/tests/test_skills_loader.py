@@ -145,19 +145,50 @@ def test_each_skill_has_plan_section(name: str):
 
 
 @pytest.mark.parametrize("name", REQUIRED_SKILLS)
-def test_skill_section_order(name: str):
-    """`## Think first` → `## Reasoning` → `## Plan` is the required order in every skill.
+def test_each_skill_has_validation_section(name: str):
+    """Every skill must include a `## Validation` section: post-action evidence checks.
 
-    The four layers are sequential: deliberate (Think first) → reason (Reasoning) →
-    plan (Plan) → act (numbered rules).
+    The validation layer collects observable evidence that the work product meets the
+    Plan's Definition of done. It must list at least 3 numbered checks, plus explicit
+    'Pass:' criteria and a 'Fail action:' recovery. See docs/SUPERPOWERS.md §5 for the
+    authoring contract.
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    assert "## Validation" in body, f"{name}.md is missing the '## Validation' section"
+    section = body.split("## Validation", 1)[1]
+    end_idx = section.find("\n## ")
+    if end_idx < 0:
+        end_idx = len(section)
+    val_text = section[:end_idx]
+    numbered = [
+        line for line in val_text.splitlines()
+        if line.strip()[:2].rstrip(".").isdigit() and "." in line.strip()[:3]
+    ]
+    assert len(numbered) >= 3, (
+        f"{name}.md '## Validation' has only {len(numbered)} numbered checks; need ≥ 3"
+    )
+    lower = val_text.lower()
+    assert "pass:" in lower, f"{name}.md '## Validation' is missing 'Pass:' criteria"
+    assert "fail action:" in lower, (
+        f"{name}.md '## Validation' is missing 'Fail action:' recovery"
+    )
+
+
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_skill_section_order(name: str):
+    """`## Think first` → `## Reasoning` → `## Plan` → `## Validation` is the required order.
+
+    The five layers are sequential: deliberate (Think first) → reason (Reasoning) →
+    plan (Plan) → act (numbered rules) → validate (Validation, post-action evidence).
     """
     body = (SKILLS_DIR / f"{name}.md").read_text()
     think_idx = body.find("## Think first")
     reason_idx = body.find("## Reasoning")
     plan_idx = body.find("## Plan")
-    assert think_idx >= 0 and reason_idx >= 0 and plan_idx >= 0
-    assert think_idx < reason_idx < plan_idx, (
-        f"{name}.md: section order must be Think first → Reasoning → Plan"
+    val_idx = body.find("## Validation")
+    assert all(i >= 0 for i in (think_idx, reason_idx, plan_idx, val_idx))
+    assert think_idx < reason_idx < plan_idx < val_idx, (
+        f"{name}.md: section order must be Think first → Reasoning → Plan → Validation"
     )
 
 

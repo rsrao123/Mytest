@@ -22,6 +22,15 @@ Before changing any file:
 Definition of done: one-line style summary + ≥ 1 path traced before any edit.
 Rollback if: the edit feels foreign to the file when re-read — reread another path; the style was wrong.
 
+## Validation
+Before editing, verify:
+1. The test file was opened first; one-line summary of the contract recorded.
+2. One entry-to-exit path traced; written notes saved.
+3. The file's style summarized in one sentence (naming / error-handling / layering).
+4. Edit plan committed to matching that style (or PR explains why not).
+Pass: tests-first + path-traced + style-named + edit-plan-aligned.
+Fail action: re-read another path; the original style read was wrong.
+
 Before you change code, understand it.
 
 1. Read the test file first. Tests document the contract better than docstrings.

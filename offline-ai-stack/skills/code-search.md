@@ -22,6 +22,15 @@ Before reading any file:
 Definition of done: a ranked file:line list + one-line note per opened hit.
 Rollback if: 3 narrowing attempts return zero hits — the target may not exist; ask before fabricating.
 
+## Validation
+Before opening any file, verify:
+1. Search target stated in one line (definition / call sites / tests).
+2. `rg` flags listed (`-w`, `--type`, path scope) and justified per filter.
+3. Hit count ≤ 50 after narrowing; if not, narrow again.
+4. Top-3 hits ranked with a one-line relevance justification each.
+Pass: target + filters + hits ≤ 50 + ranked top-3.
+Fail action: return to Plan step 1; the search was too broad.
+
 1. Start with `rg -n` (ripgrep) at the repo root; prefer it over grep for speed.
 2. Search for the symbol's definition before chasing call sites: `rg -n "def <name>|fn <name>|function <name>|class <name>"`.
 3. Use word boundaries (`-w`) when names are short or common.

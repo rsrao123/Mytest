@@ -21,6 +21,15 @@ Before each commit:
 4. Definition of done: one tag per commit + green hooks + conventional subject line.
 Rollback if: a hook fails — fix and create a NEW commit. Never `--amend` already-pushed commits.
 
+## Validation
+Before pushing, verify:
+1. `git log --oneline @{push}..HEAD` shows one tag per commit.
+2. No commit subject contains " and "; none exceeds 72 chars.
+3. Pre-commit hooks pass on each commit individually.
+4. No `--amend` of any already-pushed commit.
+Pass: all 4 checks green.
+Fail action: rebase to split offending commits; rerun hooks.
+
 1. Atomic commits: one logical change per commit. If you'd describe it with "and", split it.
 2. Conventional Commits format: `type(scope): subject` where type ∈ {feat, fix, refactor, perf, test, docs, chore, build, ci}.
 3. Subject in imperative mood, ≤72 chars, no trailing period.

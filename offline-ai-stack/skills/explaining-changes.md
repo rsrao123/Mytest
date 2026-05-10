@@ -22,6 +22,15 @@ Before pushing:
 Definition of done: future-you-at-2am can pick this up cold without scrolling to the diff.
 Rollback if: a reviewer asks "why" — the message failed; rewrite it before merging.
 
+## Validation
+Before merging, verify:
+1. The first sentence states the *why*, not the *what*.
+2. Rejected alternatives are named with a reason for each.
+3. Caveats (migrations / deploy order / flags / breaking changes) appear under their own header.
+4. A cold reader confirms the diff is understandable from the description alone.
+Pass: why-first + alternatives + caveats + cold-reader-passed.
+Fail action: rewrite description before merge.
+
 The audience for a commit message and PR description is *future-you reading git blame at 2am*. Write for them.
 
 1. Lead with *why*, not *what*. The diff already shows what.

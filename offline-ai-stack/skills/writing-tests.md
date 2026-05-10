@@ -22,6 +22,15 @@ For each test:
 Definition of done: AAA visible + name encodes the case + mental-mutation test passed.
 Rollback if: mutation doesn't fail the test — the test is decorative; rewrite before merging.
 
+## Validation
+Before merging, verify:
+1. The test name encodes (unit, scenario, expected).
+2. AAA sections are visually separated.
+3. Mental-mutation: a deliberate bug in the production code would fail this test.
+4. No assertion on call counts / private methods / implementation details.
+Pass: name + AAA + mutation-test passed + behavior-only assertions.
+Fail action: rewrite the test; if it can't catch a deliberate bug, it's decorative.
+
 1. One concept per test. Name describes the case: `test_<unit>_<scenario>_<expected>`.
 2. Arrange / Act / Assert, in that order, with blank lines between. No surprises hidden in fixtures.
 3. Test behavior, not implementation. Asserting "method foo was called twice" is a smell.

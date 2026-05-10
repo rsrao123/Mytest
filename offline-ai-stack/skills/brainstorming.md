@@ -22,6 +22,15 @@ Before recommending:
 Definition of done: top-two surfaced with one named tradeoff axis between them.
 Rollback if: the user's chosen axis isn't on the matrix — restart at step 1 with that axis explicit.
 
+## Validation
+Before recommending, verify:
+1. Direction count ≥ 5; each tagged (obvious / contrarian / minimal / max / other).
+2. Score table present with explicit columns (effort, impact, reversibility).
+3. Top two surfaced; the differing tradeoff axis is named in one line.
+4. No collapse to a single recommendation without a user-chosen axis.
+Pass: count ≥ 5 + scored + top-two + axis named.
+Fail action: return to Plan step 1; convergence happened too early.
+
 1. Generate at least 5 distinct directions before evaluating any.
 2. Force variety: include the obvious, the contrarian, the simplest viable, and the most ambitious.
 3. Score each on (a) effort, (b) impact, (c) reversibility.

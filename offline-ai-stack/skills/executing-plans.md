@@ -22,6 +22,15 @@ For each step:
 Definition of done: every step's verify check has passed; plan markers updated.
 Rollback if: any step fails its verify — execute the documented rollback; do not improvise a fix.
 
+## Validation
+At each step boundary, verify:
+1. The step's verify check ran and returned green.
+2. The actual outcome matches the plan's expected outcome (no silent drift).
+3. Plan markers (todo / done / blocked) are updated for this step.
+4. On any failure, the rollback path was executed (not improvised).
+Pass: verify green + outcomes match + markers current + no improvisation.
+Fail action: halt; surface state to the user; do not advance to the next step.
+
 1. Read the entire plan before touching anything.
 2. Execute one step at a time; verify before proceeding.
 3. If a step fails, do NOT improvise — report the failure with state and ask.

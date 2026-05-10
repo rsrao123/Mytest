@@ -22,6 +22,15 @@ Before opening the editor:
 Definition of done: profile named + anti-patterns audited + 3 breakpoints verified + empty/loading/error states present.
 Rollback if: drift to a different profile mid-work — revert, pick one, commit it in the PR description.
 
+## Validation
+Before requesting review, verify:
+1. PR description names the chosen aesthetic profile.
+2. Anti-pattern audit checklist returns 0 hits.
+3. Screenshots at 375 / 768 / 1280 px attached to the PR.
+4. Empty / loading / error states demonstrated for each component.
+Pass: profile + 0 anti-patterns + 3 screenshots + 3 states.
+Fail action: revert to one profile and re-audit before re-requesting review.
+
 ## Anti-patterns (never produce these by default)
 - Purple/blue gradient hero sections
 - Glassmorphism (backdrop-blur on every card)

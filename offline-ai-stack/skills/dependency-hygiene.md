@@ -22,6 +22,15 @@ Before adding a dep:
 Definition of done: pinned dep + lockfile updated + audit recorded in PR description.
 Rollback if: a CVE is filed against the dep within 90 days — replace, vendor, or remove.
 
+## Validation
+Before merging the dep-add PR, verify:
+1. License compatible with the project's policy; recorded in PR description.
+2. Pinned exact version in requirements file + lockfile updated.
+3. `pip-audit` (or equivalent) shows 0 known CVEs at merge time.
+4. PR description names the capability missing from stdlib + existing deps.
+Pass: license + pinned + 0 CVEs + justified.
+Fail action: remove the dep, or replace with a smaller / better-maintained alternative.
+
 1. **Pin** every direct dependency to an exact version; let the lockfile pin transitives.
 2. **Audit** weekly: `pip-audit`, `npm audit`, `safety check`, `trivy fs`.
 3. **Update on a schedule**, not in panic. One dependency per PR; run the full test suite.

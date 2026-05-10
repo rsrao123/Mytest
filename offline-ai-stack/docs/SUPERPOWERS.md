@@ -37,6 +37,11 @@ deliberately terse and prescriptive; the *why* and the *how* live here.
   definition of done, and a rollback condition. The agent commits to
   the plan *before* touching the work product, so deviations are
   visible.
+- **Validation observable, not asserted** — every skill ends with a
+  `## Validation` block: concrete post-action checks the agent must
+  run, with explicit Pass criteria and a Fail action. "I did the work"
+  is not enough; the agent must produce evidence the work meets the
+  Definition of done.
 
 ### Non-goals
 - Replacing fine-tuning. Skills bias behavior; they don't change capability.
@@ -83,8 +88,8 @@ filesystem *is* the registry.
 
 ### 2.0 Anatomy of a skill file
 
-Every skill file has four sections in a fixed order — **deliberate →
-reason → plan → act**:
+Every skill file has five sections in a fixed order — **deliberate →
+reason → plan → act → validate**:
 
 ```
 # Skill: <Name>
@@ -113,6 +118,15 @@ Rollback if: <named condition> — <what to do>.
 1. <imperative rule>
 2. <imperative rule>
 …
+
+## Validation
+<one-line statement of when these checks run>:
+1. <observable check — concrete artifact or command>
+2. <observable check>
+3. <observable check>
+4. <observable check>
+Pass: <conjunction of the checks above>.
+Fail action: <named recovery — usually "return to <layer/step>">.
 ```
 
 | Layer | Purpose | Form | Output the agent produces |
@@ -121,15 +135,18 @@ Rollback if: <named condition> — <what to do>.
 | `## Reasoning` | Inference: a domain-specific procedure for figuring out what's right. | 3–5 numbered steps; observe → hypothesize → check → conclude. | A written reasoning trace inline in the agent's response. |
 | `## Plan` | Execution program: ordered actions with gates, definition of done, and rollback. | 3–5 numbered actions, ≥ 1 stop-gate, "Definition of done", "Rollback if". | A committed work program, posted before the work product appears. |
 | Numbered rules | Action: imperative checklist for the actual work. | Action-first sentences. | The work product (diff, review, plan, etc.). |
+| `## Validation` | Evidence: post-action checks proving the Definition of done was met. | 3–5 numbered observable checks, "Pass:", "Fail action:". | A validation receipt — checks + verdict — posted alongside the work product. |
 
-All four layers are enforced by `tests/test_skills_loader.py`:
+All five layers are enforced by `tests/test_skills_loader.py`:
 
 - `test_each_skill_has_think_first_section` — ≥ 3 reflective prompts.
 - `test_each_skill_has_reasoning_section` — ≥ 3 numbered inference steps.
-- `test_each_skill_has_plan_section` — ≥ 3 numbered actions, plus
+- `test_each_skill_has_plan_section` — ≥ 3 numbered actions plus
   "Definition of done" and "Rollback if" markers.
+- `test_each_skill_has_validation_section` — ≥ 3 numbered checks plus
+  "Pass:" and "Fail action:" markers.
 - `test_skill_section_order` — `## Think first` → `## Reasoning` →
-  `## Plan` order is mandatory.
+  `## Plan` → `## Validation` order is mandatory.
 
 Rationale: the rule layer alone is easy to pattern-match without
 deliberation, especially under time pressure. The thinking layer
@@ -137,20 +154,32 @@ forces the agent to surface what it's assuming. The reasoning layer
 forces the agent to *show its work* (auditable from the response, not
 just the outcome). The plan layer forces the agent to commit to a
 *sequence* with explicit gates, a named end state, and a rollback —
-so a deviation is loud, not silent. Empirically (see
-`promptfooconfig.yaml` baselines), the four-layer structure improves
+so a deviation is loud, not silent. The validation layer forces the
+agent to *produce evidence* the work meets the definition of done —
+so "I did it" requires receipts, not assertion. Empirically (see
+`promptfooconfig.yaml` baselines), this five-layer structure improves
 rule adherence on ambiguous cases more than longer rule lists do, and
 makes review by humans or downstream agents tractable.
 
-#### Reasoning vs. Plan — why both?
+#### Reasoning vs. Plan vs. Validation — why three?
 
-Reasoning answers *"given this situation, what's the right thing?"*.
-Plan answers *"given the right thing, how do I execute with checkpoints
-and a rollback?"*. The same skill needs both because the agent fails
-in two distinct ways: by reaching a wrong conclusion (a reasoning
-failure) or by the right conclusion drifting during execution (a
-planning failure). Splitting them keeps each section tight and lets
-tests assert against each independently.
+These three layers each handle a different failure mode:
+
+- **Reasoning failure** — the agent reaches a wrong *conclusion* about
+  what the right thing is. `## Reasoning` answers *"given this
+  situation, what's the right thing?"* and gates against this failure.
+- **Planning failure** — the agent reaches the right conclusion but
+  *drifts during execution* (skips steps, improvises rollback,
+  bundles concerns). `## Plan` answers *"given the right thing, how do
+  I execute with checkpoints and rollback?"* and gates against this.
+- **Verification failure** — the agent executes the plan and *believes*
+  it's done, but the work doesn't actually meet the standard.
+  `## Validation` answers *"how do I know the work meets the standard,
+  with evidence I can show?"* and gates against this.
+
+Splitting the three keeps each section tight, lets tests assert
+against each independently, and makes it easy to point a code reviewer
+at the specific layer that broke when a skill misbehaves.
 
 ### 2.1 Why backstory injection, not system-prompt injection?
 
@@ -645,9 +674,18 @@ Rollback if: <named condition> — <what to do>.
 2. <Imperative sentence>.
 3. <Imperative sentence>.
 …
+
+## Validation
+<One-line statement of when these checks run>:
+1. <Observable check — a concrete command, artifact, or assertion.>
+2. <Observable check.>
+3. <Observable check.>
+4. <Observable check.>
+Pass: <conjunction of the checks above>.
+Fail action: <named recovery — usually "return to <layer/step>">.
 ```
 
-The four layers do different jobs:
+The five layers do different jobs:
 
 - **`## Think first`** — 3-4 reflective questions in the agent's voice,
   specific to *this* skill's domain. Their job is to make the agent
@@ -670,20 +708,26 @@ The four layers do different jobs:
 - **Numbered rules** — imperative, action-first, one sentence each.
   This is the *do* layer that the deliberation, inference, and planning
   layers feed into.
+- **`## Validation`** — 3-5 numbered observable checks the agent must
+  run after the work product exists, plus an explicit Pass conjunction
+  and a Fail action. Checks must be **observable**: a command to run,
+  an artifact to grep, a count to verify, a comparison to make.
+  Subjective checks ("the code is clean") are rejected — checks must
+  be auditable by another agent or a CI job.
 
 Constraints:
-- ≤ 70 lines total (Think first + Reasoning + Plan + rules).
+- ≤ 90 lines total (Think first + Reasoning + Plan + rules + Validation).
 - 3–4 thinking questions, 3–5 reasoning steps, 3–5 plan actions, ≤ 10
-  imperative rules.
-- One sentence per item, present tense, action-first for rules and plan;
-  question form for `## Think first`; imperative form for `## Reasoning`
-  steps.
+  imperative rules, 3–5 validation checks.
+- One sentence per item, present tense, action-first for rules, plan,
+  and validation checks; question form for `## Think first`; imperative
+  form for `## Reasoning` steps.
 - No anecdotes, no rationale paragraphs. Anecdotes go here in
   `SUPERPOWERS.md`.
 - File name is kebab-case and matches the heading.
 - Skill must be checkable: a reviewer can audit one output at a time
   against the thinking prompts, the reasoning trace, the plan
-  commitments, and the rules.
+  commitments, the rules, and the validation receipt.
 
 ### 5.2 Submission checklist
 
@@ -692,10 +736,11 @@ Constraints:
 - [ ] `## Think first` section present with ≥ 3 domain-specific questions.
 - [ ] `## Reasoning` section present with ≥ 3 numbered inference steps.
 - [ ] `## Plan` section present with ≥ 3 numbered actions, "Definition of done", and "Rollback if".
-- [ ] Section order is `Think first` → `Reasoning` → `Plan` → numbered rules.
+- [ ] `## Validation` section present with ≥ 3 numbered observable checks, "Pass:", and "Fail action:".
+- [ ] Section order is `Think first` → `Reasoning` → `Plan` → numbered rules → `Validation`.
 - [ ] Numbered rules section present.
 - [ ] Added to `tests/test_skills_loader.py::REQUIRED_SKILLS`.
-- [ ] `pytest tests/` passes (file exists, heading, all three sections, order, all counts and markers).
+- [ ] `pytest tests/` passes (file exists, heading, all four sections, order, all counts and markers).
 - [ ] Catalog entry added to §3 here, including triggers, inverse,
   working signal, companions.
 - [ ] If the skill changes implementer behavior, add at least one new
@@ -746,6 +791,21 @@ Constraints:
   execution program — the reasoning was masquerading as a plan. Add
   stop-gates, exit criteria, and rollback to make it a real plan, or
   collapse the two sections.
+- **Subjective validation checks.** "The code is clean", "the tests
+  feel good", "the design is intuitive" are not validation. Every
+  check must be observable: a command to run, an artifact to grep, a
+  count to compare, a CI signal to read. Subjective checks are
+  rejected.
+- **Validation without Pass criteria or Fail action.** A validation
+  block that lists checks but never says when they collectively pass,
+  or what to do when they don't, is just an unenforceable wishlist.
+  Tests reject any validation missing either marker.
+- **Validation that re-asserts the Plan's Definition of done.** The
+  Definition of done states *what counts as finished*. The Validation
+  checks state *how the agent demonstrates that*. They must reference
+  the same standard, but the validation expresses it as observable
+  evidence. If the validation is just "Definition of done = true",
+  it's not validation — it's an assertion.
 
 ---
 

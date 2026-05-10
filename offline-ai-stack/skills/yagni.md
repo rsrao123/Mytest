@@ -22,6 +22,15 @@ Before adding any abstraction / option / flag:
 Definition of done: simple form shipped + deferred-extraction note present (if applicable).
 Rollback if: an abstraction got added without a current real caller — inline immediately and file the lesson.
 
+## Validation
+Before merging, verify:
+1. No abstraction / option / flag landed without a current real caller.
+2. No helper extracted with < 3 occurrences in the codebase.
+3. Deferred-extraction notes (where applicable) name the unlock condition.
+4. The diff is no larger than the smallest implementation that satisfies the requirement.
+Pass: no caller-less abstractions + no premature extracts + notes present + minimal diff.
+Fail action: inline the abstraction; ship the simple form.
+
 1. Build for the requirement in front of you. Not the one you're imagining for next quarter.
 2. Three similar lines beat a premature abstraction. Wait for the fourth before extracting.
 3. No options, flags, or knobs without a current caller that needs them.

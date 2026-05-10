@@ -23,6 +23,15 @@ When writing the plan itself:
 Definition of done: every step has verify + rollback + estimate; an executor confirmed executability.
 Rollback if: an executor cannot follow a step without asking — the plan needs more detail; rewrite it.
 
+## Validation
+Before approval, verify:
+1. The goal is one outcome-shaped sentence.
+2. Each step has verify + rollback + estimate.
+3. Out-of-scope is listed explicitly.
+4. An executor confirmed they could follow the plan without questions.
+Pass: goal + per-step trio + out-of-scope + executor sign-off.
+Fail action: rewrite the failing step; the plan isn't ready for execution.
+
 A plan must contain:
 - Goal (one sentence, outcome-shaped)
 - Acceptance criteria (testable)
