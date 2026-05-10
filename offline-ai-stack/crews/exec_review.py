@@ -77,6 +77,23 @@ release_mgr = with_defaults(
     "release-shipping", "incident-response", "explaining-changes",
 )
 
+# Used by --role all to aggregate the 5 parallel exec reviews into one memo.
+exec_chair = with_defaults(
+    Agent(
+        role="Exec Review Chair",
+        goal=(
+            "Aggregate the five exec reviews into a single go/no-go memo. "
+            "Surface consensus, name dissent, capture the decision."
+        ),
+        backstory=(
+            "Chairs the meeting. Reads all five reviews, identifies where they "
+            "agree, names where they conflict, and produces one decision."
+        ),
+        llm=reasoner, allow_delegation=False,
+    ),
+    "explaining-changes", "architecture-decision-record",
+)
+
 ROLES = {
     "ceo": (
         ceo,
@@ -113,15 +130,37 @@ def main():
     plan_text = Path(args.plan).read_text()
 
     if args.role == "all":
-        tasks, agents = [], []
+        # CrewAI has no Process.parallel; use async_execution on each role's task
+        # inside a sequential crew, then a synthesis task that consumes them all.
+        review_tasks, agents = [], []
         for _name, (agent, prompt) in ROLES.items():
-            tasks.append(Task(
+            review_tasks.append(Task(
                 agent=agent,
                 description=f"{prompt}\n\nPlan:\n{plan_text}",
                 expected_output="A structured review with explicit decision.",
+                async_execution=True,
             ))
             agents.append(agent)
-        crew = Crew(agents=agents, tasks=tasks, process=Process.parallel, verbose=True)
+        synthesis = Task(
+            agent=exec_chair,
+            description=(
+                "Aggregate the five exec reviews above into one go/no-go memo. "
+                "Sections: consensus / dissent (per-role) / decision / top risk / "
+                "next action. Do not invent positions reviewers didn't take."
+            ),
+            expected_output=(
+                "Single memo with: consensus / dissent / decision (SHIP / DELAY / "
+                "DO NOT SHIP) / top risk / next action."
+            ),
+            context=list(review_tasks),
+        )
+        agents.append(exec_chair)
+        crew = Crew(
+            agents=agents,
+            tasks=[*review_tasks, synthesis],
+            process=Process.sequential,
+            verbose=True,
+        )
     else:
         agent, prompt = ROLES[args.role]
         task = Task(

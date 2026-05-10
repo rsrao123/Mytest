@@ -1,17 +1,22 @@
-crewai
-crewai-tools
-langgraph
-langchain
-langchain-openai
-langchain-community
-chromadb
-llama-index
-llama-index-vector-stores-chroma
-llama-index-embeddings-huggingface
-faster-whisper
-bandit
-semgrep
-safety
-pip-audit
-browser-use
-playwright
+# CrewAI: pin to a known-good range. The agent / task / process API surface
+# changes across versions (memory config, async_execution semantics).
+# 0.80.0 introduced async_execution behaving as documented; 0.99 is the
+# upper bound we've validated the crews against. Bump deliberately, not by
+# free-floating.
+crewai>=0.80,<1.0
+crewai-tools>=0.20,<1.0
+langgraph>=0.2,<1.0
+langchain>=0.3,<1.0
+langchain-openai>=0.2,<1.0
+langchain-community>=0.3,<1.0
+chromadb>=0.5,<1.0
+llama-index>=0.11,<1.0
+llama-index-vector-stores-chroma>=0.3,<1.0
+llama-index-embeddings-huggingface>=0.4,<1.0
+faster-whisper>=1.0,<2.0
+bandit>=1.7,<2.0
+semgrep>=1.90,<2.0
+safety>=3.0,<4.0
+pip-audit>=2.7,<3.0
+browser-use>=0.1,<1.0
+playwright>=1.45,<2.0

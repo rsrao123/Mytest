@@ -1,4 +1,10 @@
-"""Four parallel review agents — replacement for /code-review."""
+"""Four parallel review agents + a synthesizer — replacement for /code-review.
+
+CrewAI doesn't expose `Process.parallel`. We get parallel execution by marking
+each reviewer task with `async_execution=True` inside a `Process.sequential`
+crew; the synthesis task at the end consumes their outputs in `context=`,
+which makes the runtime wait for all of them to finish before synthesis runs.
+"""
 import subprocess
 import sys
 from pathlib import Path
@@ -35,7 +41,7 @@ class GitTool:
 file_tool = FileReadTool()
 git_tool = GitTool()
 
-# ---- Four reviewers, run in parallel ----
+# ---- Four reviewers, run concurrently via async_execution ----
 
 claude_md_compliance = with_defaults(
     Agent(
@@ -87,36 +93,73 @@ git_history_reviewer = with_defaults(
     "code-search",
 )
 
+# ---- Synthesizer: aggregates the 4 parallel outputs into one report ----
+
+review_synthesizer = with_defaults(
+    Agent(
+        role="Review Synthesizer",
+        goal=(
+            "Aggregate findings from the four parallel reviewers; deduplicate; "
+            "rank by severity; produce a single PR-ready report."
+        ),
+        backstory=(
+            "Reads four independent reviews and produces one. Cuts duplicates, "
+            "ranks by severity, never invents new findings."
+        ),
+        llm=llm, tools=[file_tool], allow_delegation=False,
+    ),
+    "pr-review",
+)
+
 
 def build(diff_path: str):
     diff = Path(diff_path).read_text()
     common = f"\n\nDiff under review:\n```diff\n{diff[:8000]}\n```"
-    tasks = [
-        Task(
-            agent=claude_md_compliance,
-            description="Audit the diff against project conventions." + common,
-            expected_output="A list of violations (rule, file:line, evidence) or 'no violations'.",
+    compliance_task = Task(
+        agent=claude_md_compliance,
+        description="Audit the diff against project conventions." + common,
+        expected_output="A list of violations (rule, file:line, evidence) or 'no violations'.",
+        async_execution=True,
+    )
+    redundancy_task = Task(
+        agent=redundancy_checker,
+        description="Find redundancy and dead code in the diff." + common,
+        expected_output="A redundancy list with refactor suggestions.",
+        async_execution=True,
+    )
+    bug_task = Task(
+        agent=bug_detector,
+        description="Find bugs in the diff." + common,
+        expected_output="A bug list (severity, file:line, scenario, fix).",
+        async_execution=True,
+    )
+    history_task = Task(
+        agent=git_history_reviewer,
+        description="Use git log/blame on the touched files; surface relevant historical context." + common,
+        expected_output="Per-file historical context that affects the review.",
+        async_execution=True,
+    )
+    synthesis_task = Task(
+        agent=review_synthesizer,
+        description=(
+            "Aggregate the four reviewer outputs above into one PR-ready report. "
+            "Deduplicate findings across reviewers; rank by severity (Critical / "
+            "Major / Minor); end with a single verdict (APPROVE / REQUEST_CHANGES / "
+            "BLOCK) and the top blocker (if any)."
         ),
-        Task(
-            agent=redundancy_checker,
-            description="Find redundancy and dead code in the diff." + common,
-            expected_output="A redundancy list with refactor suggestions.",
+        expected_output=(
+            "Sections: Files reviewed | Findings by reviewer | Deduplicated issue "
+            "list | Severity ranking | Final verdict + top blocker."
         ),
-        Task(
-            agent=bug_detector,
-            description="Find bugs in the diff." + common,
-            expected_output="A bug list (severity, file:line, scenario, fix).",
-        ),
-        Task(
-            agent=git_history_reviewer,
-            description="Use git log/blame on the touched files; surface relevant historical context." + common,
-            expected_output="Per-file historical context that affects the review.",
-        ),
-    ]
+        context=[compliance_task, redundancy_task, bug_task, history_task],
+    )
     return Crew(
-        agents=[claude_md_compliance, redundancy_checker, bug_detector, git_history_reviewer],
-        tasks=tasks,
-        process=Process.parallel,  # all four run concurrently
+        agents=[
+            claude_md_compliance, redundancy_checker, bug_detector,
+            git_history_reviewer, review_synthesizer,
+        ],
+        tasks=[compliance_task, redundancy_task, bug_task, history_task, synthesis_task],
+        process=Process.sequential,  # async_execution on the 4 reviewers gives parallel
         verbose=True,
     )
 
