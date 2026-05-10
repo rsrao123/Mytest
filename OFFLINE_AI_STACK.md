@@ -78,18 +78,54 @@ or an equivalent non-HF engine.
 - no runtime Python code references HF repo IDs *except* as vLLM service-name aliases
 - no runtime Python file imports `huggingface_hub`
 
-### Verification
+### Full operator checklist
 
-After `make offline-prep` and `make bring-up`, run:
 ```bash
-make hf-audit                # structural: every model present, no repo-ID surprises
-make offline-doctor          # observed: passive 30s probe of network egress
-make offline-doctor-strict   # adversarial: iptables blocks egress during probe (sudo)
+# --- One time, with internet ---
+sudo apt install -y curl wget git python3.11 docker.io docker-compose-v2 \
+                    iptables bandit semgrep gitleaks
+pip install -r offline-ai-stack/requirements.txt
+
+# Stack-level prep (downloads models, caches scanner DBs, sets telemetry-off)
+make offline-prep
+
+# OS-level lockdown (masks Ubuntu's NTP / snap / unattended-upgrades /
+# whoopsie / apport / popularity-contest / canonical-livepatch / cloud-init)
+sudo make os-harden
+sudo reboot
+
+# --- After reboot, with the stack up ---
+make bring-up
+
+# Three-tier verification, weakest first:
+make hf-audit                   # STRUCTURAL: every model present, no repo-ID surprises in code
+make offline-doctor             # OBSERVED:   passive 30s probe; reports non-loopback ESTAB sockets
+sudo make offline-doctor-strict # ADVERSARIAL: 30s with iptables blocking egress
+sudo make airgap-test           # HARDEST:    full 90s smoke under kernel-level OUTPUT drop
+
+# Disconnect the network. Continue using the stack normally.
 ```
 
-`hf-audit` catches "what could leak". `offline-doctor` catches "what did leak".
-The strict mode is the only real proof — it actively refuses any non-loopback
-connection during the probe window and reports any process that tried.
+### What each verification catches
+
+| Check | Scope | Catches |
+|---|---|---|
+| `hf-audit` | Static repo scan + filesystem | Code paths that could leak to HF Hub; missing model files |
+| `offline-doctor` (passive) | Live `ss -tunap` sampling | Anything actively connecting to non-loopback during the window |
+| `offline-doctor-strict` | iptables OUTPUT drop, 30s | Anything that *tries* to connect — fails loudly under the rule |
+| `airgap-test` | iptables OUTPUT drop + full smoke, 90s | End-to-end: every probe (pytest, scanners, claude_mem, vLLM, Chroma, crews) must complete |
+| `os-harden-offline.sh` | systemd unit masking | OS-level services (NTP, snap, apt-daily, whoopsie, apport, canonical-livepatch) that phone home outside the stack |
+
+`airgap-test` is the only one that proves the *full system* survives a real network outage. If it passes, you can physically disconnect.
+
+### Irreducible dependencies
+
+After everything above, these remain:
+1. **One-time setup with internet** — model downloads, image pulls, apt/pip installs.
+2. **The `transformers` Python library** (a `vllm` dep). Stays importable, never reaches HF Hub at runtime. Removing it requires swapping vLLM for llama.cpp/GGUF or equivalent.
+3. **The host OS itself** — kernel, glibc, NVIDIA driver. Updates need internet by definition; `os-harden-offline.sh` disables the automatic timers but doesn't replace the underlying packages.
+
+Everything else is offline.
 
 ### The remaining online dependency
 

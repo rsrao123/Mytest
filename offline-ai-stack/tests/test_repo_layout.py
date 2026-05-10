@@ -31,6 +31,8 @@ EXPECTED_FILES = [
     "scripts/offline-prep.sh",
     "scripts/offline-doctor.sh",
     "scripts/hf-audit.sh",
+    "scripts/os-harden-offline.sh",
+    "scripts/airgap-test.sh",
     "skills/loader.py",
     "templates/PLAN.md",
     "templates/CONVENTIONS.md",
@@ -46,6 +48,8 @@ EXECUTABLE_SCRIPTS = [
     "scripts/offline-prep.sh",
     "scripts/offline-doctor.sh",
     "scripts/hf-audit.sh",
+    "scripts/os-harden-offline.sh",
+    "scripts/airgap-test.sh",
 ]
 
 

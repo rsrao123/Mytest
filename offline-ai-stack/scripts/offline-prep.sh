@@ -115,6 +115,18 @@ HF_HUB_DISABLE_TELEMETRY=1
 HF_HUB_DISABLE_IMPLICIT_TOKEN=1
 VLLM_NO_USAGE_STATS=1
 VLLM_DO_NOT_TRACK=1
+# LlamaIndex / GPTCache / posthog (some llama-index extras send analytics)
+LLAMA_INDEX_TELEMETRY_DISABLED=true
+LLAMA_INDEX_ANALYTICS_DISABLED=true
+POSTHOG_DISABLED=true
+# pip / setuptools / pkg_resources analytics (newer pip has telemetry plans)
+PIP_DISABLE_PIP_VERSION_CHECK=1
+PIP_NO_INDEX=
+# Ollama (if ever installed) — phones home for model updates
+OLLAMA_NOPRUNE=1
+OLLAMA_HOST=127.0.0.1:11434
+# Block 'check for update' on generic Python tools
+NO_COLOR=
 EOF
 )
 
