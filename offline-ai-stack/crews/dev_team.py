@@ -51,7 +51,8 @@ product_planner = with_defaults(
         allow_delegation=False,
         verbose=True,
     ),
-    "brainstorming", "writing-plans",
+    # writing-plans is in the planning baseline.
+    "brainstorming", "prompt-engineering",
 )
 
 architect = with_defaults(
@@ -63,7 +64,9 @@ architect = with_defaults(
         tools=[dir_tool, file_tool],
         allow_delegation=True,
     ),
-    "writing-plans", "architecture-decision-record", "subagent-driven-development",
+    # writing-plans is in the planning baseline.
+    "architecture-decision-record", "subagent-driven-development",
+    "dispatching-parallel-agents",
 )
 
 backend_dev = with_defaults(
@@ -149,7 +152,8 @@ release_manager = with_defaults(
         tools=[file_tool],
         allow_delegation=False,
     ),
-    "writing-plans", "incident-response", "explaining-changes",
+    # writing-plans is in the planning baseline.
+    "incident-response", "explaining-changes", "handling-failures-and-retries",
 )
 
 doc_writer = with_defaults(
@@ -161,8 +165,8 @@ doc_writer = with_defaults(
         tools=[dir_tool, file_tool],
         allow_delegation=False,
     ),
-    # reading-code is in the reasoning baseline.
-    "explaining-changes", "architecture-decision-record", "writing-plans",
+    # reading-code is in the reasoning baseline; writing-plans is in the planning baseline.
+    "explaining-changes", "architecture-decision-record",
 )
 
 

@@ -602,20 +602,22 @@ working**, and **canonical companions** (skills that compose well).
 These are the canonical bundles for the agents in `crews/dev_team.py` and
 `crews/code_review.py`. Treat them as defaults; tune per project.
 
-Every recipe below uses `with_defaults` so `using-skills-effectively`
-and `handling-uncertainty` load automatically — only the role-specific
-skills are listed.
+Every recipe below uses `with_defaults` so the six-skill baseline
+(thinking + reasoning + planning) loads automatically. Only the
+role-specific skills are listed; anything that duplicates a baseline is
+dropped silently by `with_defaults`.
 
 ```python
 from skills import with_defaults
 
 # ---- Planning roles --------------------------------------------------
 with_defaults(product_planner,
-              "brainstorming", "writing-plans")
+              "brainstorming", "prompt-engineering")
 
 with_defaults(architect,
-              "writing-plans", "architecture-decision-record",
-              "subagent-driven-development")
+              "architecture-decision-record",
+              "subagent-driven-development",
+              "dispatching-parallel-agents")
 
 # ---- Implementer roles -----------------------------------------------
 with_defaults(backend_dev,
@@ -626,30 +628,30 @@ with_defaults(frontend_dev,
 
 # ---- Review roles ----------------------------------------------------
 with_defaults(bug_hunter,
-              "systematic-debugging", "root-cause-tracing", "code-search")
+              "root-cause-tracing", "code-search", "pr-review")
 
 with_defaults(security_reviewer,
               "security-review", "pr-review",
               "defensive-programming-discipline")
 
 with_defaults(perf_reviewer,
-              "pr-review", "systematic-debugging", "code-search")
+              "pr-review", "code-search", "root-cause-tracing")
 
 with_defaults(qa_engineer,
               "writing-tests", "avoiding-mocks", "avoiding-flaky-tests")
 
 # ---- Process roles ---------------------------------------------------
 with_defaults(release_manager,
-              "writing-plans", "incident-response", "explaining-changes")
+              "incident-response", "explaining-changes",
+              "handling-failures-and-retries")
 
 with_defaults(doc_writer,
-              "explaining-changes", "architecture-decision-record",
-              "reading-code")
+              "explaining-changes", "architecture-decision-record")
 
 # ---- Exec review (Stack-equivalent) ----------------------------------
-with_defaults(ceo,         "writing-plans", "yagni")
-with_defaults(eng_lead,    "writing-plans", "architecture-decision-record",
-                           "yagni")
+with_defaults(ceo,         "yagni", "brainstorming")
+with_defaults(eng_lead,    "architecture-decision-record", "yagni",
+                           "making-changes-incrementally")
 with_defaults(design_lead, "frontend-design")
 with_defaults(qa_lead,     "writing-tests", "avoiding-flaky-tests",
                            "incident-response")
@@ -659,24 +661,23 @@ with_defaults(release_mgr, "incident-response", "handling-failures-and-retries",
 
 ### 4.1 Heuristics for assembling a bundle
 
-1. **Cap at seven skills per agent.** Past that, behavior diverges and
-   prompt budget hurts. The four default skills (§4.2) count toward
+1. **Cap at nine skills per agent.** Past that, behavior diverges and
+   prompt budget hurts. The six default skills (§4.2) count toward
    this cap, so role-specific skills get the remaining three.
-2. **Pair every "planner" with `writing-plans`** and every "executor"
-   with `executing-plans` on the receiving end.
-3. **Don't mix `defensive-programming-discipline` with `security-review`
+2. **Don't mix `defensive-programming-discipline` with `security-review`
    on the same agent.** They pull in opposite directions; route them to
    different agents.
-4. **Don't load `incident-response` outside incident roles.** It adds
+3. **Don't load `incident-response` outside incident roles.** It adds
    ceremony that doesn't fit normal workflows.
 
-### 4.2 Default thinking and reasoning baselines
+### 4.2 Default thinking, reasoning, and planning baselines
 
 Every workflow agent in `crews/*.py` is constructed with
 `with_defaults(Agent(...), *role_skills)` rather than the bare
-`inject(...)`. The helper unconditionally prepends *two baselines* — a
-thinking baseline (metacognition) and a reasoning baseline (universal
-inference procedures) — before any role-specific skills.
+`inject(...)`. The helper unconditionally prepends *three baselines* —
+a thinking baseline (metacognition), a reasoning baseline (universal
+inference procedures), and a planning baseline (plan-then-execute
+discipline) — before any role-specific skills.
 
 #### Thinking baseline (`BASE_THINKING_SKILLS`)
 
@@ -692,35 +693,45 @@ inference procedures) — before any role-specific skills.
 | `reading-code` | Understand before changing. Read tests first, trace one path, match the file's style. Universal because every agent that produces output benefits from understanding the surrounding code — including planner / architect / doc-writer roles that don't write production code directly. |
 | `systematic-debugging` | Hypothesis-driven thinking: expected vs observed, falsifying experiment, no speculation without a test. Universal because every agent occasionally reasons about why something isn't behaving as expected — the doc writer chasing stale docs reasons the same way as the bug hunter chasing a regression. |
 
-These four were chosen by failure-mode coverage rather than scope:
+#### Planning baseline (`BASE_PLANNING_SKILLS`)
+
+| Default skill | Why it's a default |
+|---|---|
+| `writing-plans` | Every plan has a goal, acceptance criteria, ordered steps with verify + rollback, and an explicit out-of-scope. Universal because every agent produces something — a spec, a diff, a review, a release note — and doing it without acceptance criteria is the most common way work goes off-rails. |
+| `executing-plans` | Read the plan end-to-end, verify before proceeding, never improvise on failure. Universal because every agent eventually receives a plan from another agent (or from itself in a prior step) and must execute it without drift. |
+
+These six were chosen by failure-mode coverage rather than scope:
 - **Poor composition** (thinking) — fixed by `using-skills-effectively`.
 - **Silent fabrication** (thinking) — fixed by `handling-uncertainty`.
 - **Changing what you don't understand** (reasoning) — fixed by `reading-code`.
 - **Jumping to a conclusion without a test** (reasoning) — fixed by `systematic-debugging`.
+- **Producing un-rejectable plans** (planning) — fixed by `writing-plans`.
+- **Silent improvisation during execution** (planning) — fixed by `executing-plans`.
 
-The other 28 skills are role-specific.
+The other 26 skills are role-specific.
 
 #### Composition order and dedupe
 
 `with_defaults` loads in this order:
 1. `BASE_THINKING_SKILLS` (in declaration order)
 2. `BASE_REASONING_SKILLS` (in declaration order)
-3. role-specific skills, *minus any that duplicate a baseline skill*
+3. `BASE_PLANNING_SKILLS` (in declaration order)
+4. role-specific skills, *minus any that duplicate a baseline skill*
 
-The dedupe lets a call site write `with_defaults(agent, "systematic-debugging", "code-search")` even though `systematic-debugging` is in the reasoning baseline — the duplicate is dropped silently. This keeps the call sites focused on *what's additional* without needing to know what's in the baseline.
+The dedupe lets a call site write `with_defaults(agent, "writing-plans", "explaining-changes")` even though `writing-plans` is in the planning baseline — the duplicate is dropped silently. This keeps call sites focused on *what's additional* without needing to know what's in the baselines.
 
 #### Why enforce defaults rather than rely on convention?
 
 The helper removes a class of forget-to-load bugs and centralizes the
-policy: when the baseline changes (e.g., adding `commit-discipline` if
+policy: when a baseline changes (e.g., adding `commit-discipline` if
 every agent starts producing commits), it's one edit in
-`skills/defaults.py`, not 30 edits across crews. The convention is
+`skills/defaults.py`, not 30+ edits across crews. The convention is
 enforced statically by `tests/test_default_thinking.py`:
 
-- `test_base_thinking_skills_are_named` / `test_base_reasoning_skills_are_named` — the baselines aren't silently mutated.
-- `test_baselines_do_not_overlap` — the two baselines stay disjoint.
-- `test_with_defaults_loads_thinking_then_reasoning_then_role` — the load order is correct end-to-end.
-- `test_with_defaults_dedupes_role_against_thinking_baseline` / `..._reasoning_baseline` — duplicates are dropped silently.
+- `test_base_{thinking,reasoning,planning}_skills_are_named` — the baselines aren't silently mutated.
+- `test_baselines_do_not_overlap` — the three baselines stay pairwise disjoint.
+- `test_with_defaults_loads_thinking_then_reasoning_then_planning_then_role` — the load order is correct end-to-end.
+- `test_with_defaults_dedupes_role_against_{thinking,reasoning,planning}_baseline` — duplicates are dropped silently from every baseline.
 - `test_crew_imports_with_defaults` — every file under `crews/`
   imports the helper.
 - `test_crew_does_not_use_bare_inject` — no `inject(Agent(...))` call
@@ -728,13 +739,14 @@ enforced statically by `tests/test_default_thinking.py`:
 - `test_every_agent_in_crew_is_wrapped` — every `Agent(...)` constructor
   is wrapped, by count match between `Agent(` and `with_defaults(`.
 
-**Changing a baseline.** Edit `BASE_THINKING_SKILLS` or
-`BASE_REASONING_SKILLS` in `skills/defaults.py` and re-run
-`pytest tests/`. The tests will fail if the named baseline drifts or if
-the new baseline isn't reachable through `with_defaults` from every
-agent. Bumping a baseline is intentionally easy *and* loud — easy so
-the team can iterate on what's universal, loud so a baseline change is
-visible in every PR that touches it.
+**Changing a baseline.** Edit `BASE_THINKING_SKILLS`,
+`BASE_REASONING_SKILLS`, or `BASE_PLANNING_SKILLS` in
+`skills/defaults.py` and re-run `pytest tests/`. The tests will fail if
+the named baseline drifts, if the baselines overlap, or if the new
+baseline isn't reachable through `with_defaults` from every agent.
+Bumping a baseline is intentionally easy *and* loud — easy so the team
+can iterate on what's universal, loud so a baseline change is visible
+in every PR that touches it.
 
 ---
 

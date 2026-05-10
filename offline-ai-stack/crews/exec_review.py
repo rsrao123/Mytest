@@ -29,7 +29,8 @@ ceo = with_defaults(
         ),
         llm=reasoner, allow_delegation=False,
     ),
-    "writing-plans", "yagni",
+    # writing-plans is in the planning baseline.
+    "yagni", "brainstorming",
 )
 
 eng_lead = with_defaults(
@@ -42,7 +43,8 @@ eng_lead = with_defaults(
         ),
         llm=reasoner, allow_delegation=False,
     ),
-    "writing-plans", "architecture-decision-record", "yagni",
+    # writing-plans is in the planning baseline.
+    "architecture-decision-record", "yagni", "making-changes-incrementally",
 )
 
 design_lead = with_defaults(
