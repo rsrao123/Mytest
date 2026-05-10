@@ -1,6 +1,56 @@
 PLAN ?= PLAN.md
-CREWS := $(HOME)/offline-ai-stack/crews
-SCRIPTS := $(HOME)/offline-ai-stack/scripts
+STACK := $(HOME)/offline-ai-stack
+CREWS := $(STACK)/crews
+SCRIPTS := $(STACK)/scripts
+PROJECT ?= $(shell basename $$(pwd))
+
+.PHONY: help bring-up tear-down compose-up compose-down ingest voice browse \
+        plan-ceo-review plan-eng-review plan-design-review plan-all-reviews \
+        review security-review qa ship mem-recall eval
+
+help:
+	@echo "Targets:"
+	@echo "  bring-up            Start vLLM + docker stack (Section 21)"
+	@echo "  tear-down           Stop everything (preserves volumes)"
+	@echo "  compose-up          docker compose up -d"
+	@echo "  compose-down        docker compose down"
+	@echo "  ingest DIR=<path>   Ingest a project into Chroma project-memory"
+	@echo "  voice FILE=<wav>    Transcribe an audio file with faster-whisper"
+	@echo "  browse Q='...'      LLM-driven browser research"
+	@echo "  plan-ceo-review     Plan review by CEO agent"
+	@echo "  plan-eng-review     Plan review by Engineering Lead"
+	@echo "  plan-design-review  Plan review by Design Lead"
+	@echo "  plan-all-reviews    All exec roles in parallel"
+	@echo "  review              4-agent parallel code review on git diff main"
+	@echo "  security-review     Standalone security agent on git diff main"
+	@echo "  qa                  security scanners + pytest"
+	@echo "  ship                Release-manager review (PLAN=...)"
+	@echo "  mem-recall Q='...'  Recall past-session context for current project"
+	@echo "  eval                promptfoo eval against vLLM endpoints"
+
+bring-up:
+	bash $(SCRIPTS)/bring-up.sh
+
+tear-down:
+	bash $(SCRIPTS)/tear-down.sh
+
+compose-up:
+	cd $(STACK) && docker compose up -d
+
+compose-down:
+	cd $(STACK) && docker compose down
+
+ingest:
+	@test -n "$(DIR)" || (echo "Set DIR=<project_dir>" && exit 2)
+	python $(SCRIPTS)/ingest.py $(DIR)
+
+voice:
+	@test -n "$(FILE)" || (echo "Set FILE=<audio>" && exit 2)
+	python $(SCRIPTS)/voice_transcribe.py $(FILE)
+
+browse:
+	@test -n "$(Q)" || (echo "Set Q='research task'" && exit 2)
+	python $(SCRIPTS)/browser_research.py "$(Q)"
 
 plan-ceo-review:
 	python $(CREWS)/exec_review.py --role ceo --plan $(PLAN)
@@ -18,6 +68,10 @@ review:
 	git diff main > /tmp/change.diff
 	python $(CREWS)/code_review.py /tmp/change.diff
 
+security-review:
+	git diff main > /tmp/change.diff
+	python $(CREWS)/security_review.py /tmp/change.diff
+
 qa:
 	bash $(SCRIPTS)/security_scan.sh
 	pytest -q
@@ -27,4 +81,8 @@ ship:
 	@echo "Run 'git push' if release manager approved."
 
 mem-recall:
-	python $(SCRIPTS)/claude_mem_local.py recall $$(basename $$(pwd)) "$(Q)"
+	@test -n "$(Q)" || (echo "Set Q='question'" && exit 2)
+	python $(SCRIPTS)/claude_mem_local.py recall $(PROJECT) "$(Q)"
+
+eval:
+	cd $(STACK) && promptfoo eval
