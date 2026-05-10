@@ -1,3 +1,7 @@
+# Eval set for the local vLLM endpoints.
+# The doc recommends 20-30 cases mirroring real tasks before any model swap.
+# These are seed cases — replace/augment with real workload samples.
+
 providers:
   - id: openai:chat:Qwen/Qwen3-Coder-Next
     config:
@@ -8,14 +12,145 @@ providers:
       apiBaseUrl: http://localhost:8001/v1
       apiKey: local
 
+defaultTest:
+  assert:
+    - type: latency
+      threshold: 30000  # ms
+    - type: cost
+      threshold: 0.05   # local cost ~ 0; placeholder for swaps
+
 tests:
+  # --- Bug fixing ---------------------------------------------------------
   - vars:
       task: "Fix race condition in worker pool (Python)."
     assert:
       - type: llm-rubric
         value: "Patch is correct, minimal, includes a regression test."
+
+  - vars:
+      task: "Off-by-one in pagination: last page returns one item too many."
+    assert:
+      - type: llm-rubric
+        value: "Identifies the boundary condition and adds a unit test for the last page."
+
+  - vars:
+      task: "TypeError: 'NoneType' is not subscriptable in src/parser.py:88"
+    assert:
+      - type: llm-rubric
+        value: "Diagnoses the missing guard, adds a defensive check, and tests the None path."
+
+  # --- Refactoring --------------------------------------------------------
   - vars:
       task: "Refactor duplicate auth checks across 3 routes into middleware."
     assert:
       - type: llm-rubric
         value: "Single middleware applied; behavior preserved; tests updated."
+
+  - vars:
+      task: "Extract the 200-line render() into helpers, no behavior change."
+    assert:
+      - type: llm-rubric
+        value: "Helpers named by intent; original tests still pass without modification."
+
+  - vars:
+      task: "Replace nested if/else permission checks with a policy table."
+    assert:
+      - type: llm-rubric
+        value: "Table-driven; original cases all still produce the same decisions."
+
+  # --- Feature implementation --------------------------------------------
+  - vars:
+      task: "Add rate limiting to /api/login: 5 attempts per IP per minute."
+    assert:
+      - type: llm-rubric
+        value: "Uses an existing limiter or adds one cleanly; returns 429; covered by a test."
+
+  - vars:
+      task: "Add OIDC SSO (auth-code + PKCE) to the admin panel."
+    assert:
+      - type: llm-rubric
+        value: "Standard library used; state/nonce verified; redirect URI validated."
+
+  - vars:
+      task: "Add a /healthz endpoint that checks DB, cache, and disk."
+    assert:
+      - type: llm-rubric
+        value: "Returns 200/503 with per-dependency status; no secrets leaked."
+
+  # --- Test writing -------------------------------------------------------
+  - vars:
+      task: "Write unit tests for utils/url.py covering empty, malformed, and unicode hosts."
+    assert:
+      - type: llm-rubric
+        value: "Distinct test per scenario; uses parametrize; deterministic."
+
+  - vars:
+      task: "Write an integration test for the full /signup → /verify flow."
+    assert:
+      - type: llm-rubric
+        value: "Stubs email; asserts DB state and HTTP responses at each step."
+
+  # --- Performance --------------------------------------------------------
+  - vars:
+      task: "Eliminate the N+1 in OrderListView (Django ORM)."
+    assert:
+      - type: llm-rubric
+        value: "Uses select_related/prefetch_related; query count test added."
+
+  - vars:
+      task: "Hot loop in src/match.py allocates per iteration. Reduce allocs."
+    assert:
+      - type: llm-rubric
+        value: "Pre-allocates buffers or hoists invariants; benchmark or comment justifies."
+
+  # --- Security -----------------------------------------------------------
+  - vars:
+      task: "Audit src/api.py for OWASP top-10 issues. Report findings."
+    assert:
+      - type: llm-rubric
+        value: "Concrete findings with file:line, severity, and a fix per issue."
+
+  - vars:
+      task: "Replace pickle.loads(user_blob) with a safe deserialization path."
+    assert:
+      - type: llm-rubric
+        value: "Switches to a schema-validated format (json+pydantic, msgpack+schema, etc.)."
+
+  - vars:
+      task: "There's a SQL injection in reports.py (uses f-string queries). Fix it."
+    assert:
+      - type: llm-rubric
+        value: "Parameterized queries; existing tests pass; regression test for the input."
+
+  # --- Code review --------------------------------------------------------
+  - vars:
+      task: "Review this diff for redundancy and dead code: <DIFF>"
+    assert:
+      - type: llm-rubric
+        value: "Identifies duplications and unused branches with concrete refactor suggestions."
+
+  - vars:
+      task: "Review this diff against CONVENTIONS.md compliance: <DIFF>"
+    assert:
+      - type: llm-rubric
+        value: "Lists violations as (rule, file:line, evidence) or 'no violations' explicitly."
+
+  # --- Planning -----------------------------------------------------------
+  - vars:
+      task: "Turn this request into a plan with rollback per step: 'Add SSO via OIDC.'"
+    assert:
+      - type: llm-rubric
+        value: "Plan has goal, acceptance criteria, ordered steps with verify and rollback."
+
+  # --- Frontend ----------------------------------------------------------
+  - vars:
+      task: "Build a settings page with shadcn/ui in the REFINED aesthetic profile."
+    assert:
+      - type: llm-rubric
+        value: "Uses shadcn primitives; no purple gradient/glassmorphism; mobile-first."
+
+  - vars:
+      task: "Add empty and error states to the existing OrderList component."
+    assert:
+      - type: llm-rubric
+        value: "Both states distinguishable; no layout shift; accessible labels."

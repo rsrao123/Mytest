@@ -1,0 +1,8 @@
+# Append these lines to /etc/hosts so the Caddyfile *.local virtual hosts resolve:
+#   sudo tee -a /etc/hosts < configs/hosts-stub
+
+127.0.0.1  ai.local
+127.0.0.1  git.local
+127.0.0.1  ci.local
+127.0.0.1  trace.local
+127.0.0.1  search.local
