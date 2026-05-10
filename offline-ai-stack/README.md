@@ -66,7 +66,9 @@ make mem-recall Q="how does auth work" # Claude-MEM recall
 ## Skills (offline Superpowers)
 
 `skills/` ships 32 markdown prompts mirroring the obra/superpowers plugin
-plus extras for security, frontend, and ops. Compose them per agent via
+plus extras for security, frontend, and ops. The full design — purpose,
+load triggers, composition recipes per role, and an authoring guide — is
+in [`docs/SUPERPOWERS.md`](docs/SUPERPOWERS.md). Compose them per agent via
 `from skills import inject`:
 
 ```python
