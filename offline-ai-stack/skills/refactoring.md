@@ -31,6 +31,13 @@ Before pushing, verify:
 Pass: green-pre + green-post + isolated + behavior-preserving.
 Fail action: revert; the refactor wasn't safe.
 
+## Agentic capabilities
+- **Tools required:** test runner (pre + post), git (commit, diff), language-aware refactor tools where available.
+- **Subagents:** Dispatch a test-runner subagent for full-suite verification at each step.
+- **Memory writes:** Persist (file → safe-refactor patterns) for future refactors of similar code.
+- **Escalate when:** A refactor reveals a behavior bug — file a separate fix; do not bundle.
+- **Autonomy budget:** Pure refactors autonomous. Refactors touching > 5 files require architect review.
+
 Tidy First. Behavior-preserving changes only.
 
 1. Separate refactor commits from feature commits. Never mix.

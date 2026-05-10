@@ -42,6 +42,12 @@ deliberately terse and prescriptive; the *why* and the *how* live here.
   run, with explicit Pass criteria and a Fail action. "I did the work"
   is not enough; the agent must produce evidence the work meets the
   Definition of done.
+- **Agentic deployment, not implicit** — every skill closes with an
+  `## Agentic capabilities` block: which tools the skill requires,
+  when to dispatch subagents, what to persist to memory, when to
+  escalate to a human or another agent, and the autonomy budget for
+  this skill. The skill is a contract for *how it's run*, not just
+  what it asserts.
 
 ### Non-goals
 - Replacing fine-tuning. Skills bias behavior; they don't change capability.
@@ -88,8 +94,8 @@ filesystem *is* the registry.
 
 ### 2.0 Anatomy of a skill file
 
-Every skill file has five sections in a fixed order — **deliberate →
-reason → plan → act → validate**:
+Every skill file has six sections in a fixed order — **deliberate →
+reason → plan → act → validate → operationalize**:
 
 ```
 # Skill: <Name>
@@ -127,6 +133,13 @@ Rollback if: <named condition> — <what to do>.
 4. <observable check>
 Pass: <conjunction of the checks above>.
 Fail action: <named recovery — usually "return to <layer/step>">.
+
+## Agentic capabilities
+- **Tools required:** <concrete tool names>
+- **Subagents:** <when to dispatch, what role; or "none"+reason>
+- **Memory writes:** <facts to persist to project-memory>
+- **Escalate when:** <conditions that require user / architect / on-call>
+- **Autonomy budget:** <what's autonomous vs what needs approval>
 ```
 
 | Layer | Purpose | Form | Output the agent produces |
@@ -136,8 +149,9 @@ Fail action: <named recovery — usually "return to <layer/step>">.
 | `## Plan` | Execution program: ordered actions with gates, definition of done, and rollback. | 3–5 numbered actions, ≥ 1 stop-gate, "Definition of done", "Rollback if". | A committed work program, posted before the work product appears. |
 | Numbered rules | Action: imperative checklist for the actual work. | Action-first sentences. | The work product (diff, review, plan, etc.). |
 | `## Validation` | Evidence: post-action checks proving the Definition of done was met. | 3–5 numbered observable checks, "Pass:", "Fail action:". | A validation receipt — checks + verdict — posted alongside the work product. |
+| `## Agentic capabilities` | Deployment: tools, subagents, memory, escalation, autonomy budget. | Bullets with five required markers: Tools, Subagents, Memory writes, Escalate, Autonomy. | A deployment contract the runtime can read to wire the skill into a CrewAI / LangGraph agent. |
 
-All five layers are enforced by `tests/test_skills_loader.py`:
+All six layers are enforced by `tests/test_skills_loader.py`:
 
 - `test_each_skill_has_think_first_section` — ≥ 3 reflective prompts.
 - `test_each_skill_has_reasoning_section` — ≥ 3 numbered inference steps.
@@ -145,8 +159,11 @@ All five layers are enforced by `tests/test_skills_loader.py`:
   "Definition of done" and "Rollback if" markers.
 - `test_each_skill_has_validation_section` — ≥ 3 numbered checks plus
   "Pass:" and "Fail action:" markers.
+- `test_each_skill_has_agentic_section` — five required markers
+  (Tools, Subagents, Memory writes, Escalate, Autonomy).
 - `test_skill_section_order` — `## Think first` → `## Reasoning` →
-  `## Plan` → `## Validation` order is mandatory.
+  `## Plan` → `## Validation` → `## Agentic capabilities` order is
+  mandatory.
 
 Rationale: the rule layer alone is easy to pattern-match without
 deliberation, especially under time pressure. The thinking layer
@@ -156,10 +173,15 @@ just the outcome). The plan layer forces the agent to commit to a
 *sequence* with explicit gates, a named end state, and a rollback —
 so a deviation is loud, not silent. The validation layer forces the
 agent to *produce evidence* the work meets the definition of done —
-so "I did it" requires receipts, not assertion. Empirically (see
-`promptfooconfig.yaml` baselines), this five-layer structure improves
-rule adherence on ambiguous cases more than longer rule lists do, and
-makes review by humans or downstream agents tractable.
+so "I did it" requires receipts, not assertion. The agentic-capabilities
+layer makes the skill *deployable*: a runtime (CrewAI, LangGraph, a
+Makefile target) can read the tools, subagent rules, memory writes,
+escalation triggers, and autonomy budget without re-reading prose,
+which is how the same `.md` file can configure an agent in code.
+Empirically (see `promptfooconfig.yaml` baselines), this six-layer
+structure improves rule adherence on ambiguous cases more than longer
+rule lists do, and makes review by humans or downstream agents
+tractable.
 
 #### Reasoning vs. Plan vs. Validation — why three?
 
@@ -180,6 +202,26 @@ These three layers each handle a different failure mode:
 Splitting the three keeps each section tight, lets tests assert
 against each independently, and makes it easy to point a code reviewer
 at the specific layer that broke when a skill misbehaves.
+
+#### Why a separate "Agentic capabilities" layer?
+
+The first five layers describe *what the agent should think, decide,
+do, and verify*. They're complete from the agent's first-person
+perspective. But a skill is also deployed *by* something — a CrewAI
+agent, a LangGraph node, a Makefile target — which needs to wire it
+up: pass the right tools, decide whether to fan out subagents, hook
+the agent's memory into ChromaDB, set up escalation routes, and
+enforce a sane autonomy envelope.
+
+If those deployment concerns are left implicit, every consumer
+re-derives them from the prose, badly. The `## Agentic capabilities`
+section makes them explicit: the runtime parses five named bullets
+(`Tools`, `Subagents`, `Memory writes`, `Escalate`, `Autonomy`) and
+can configure the agent from data, not from heuristics. This is also
+the layer that prevents the agent from quietly exceeding its
+authority: the autonomy budget says *what's autonomous* and *what
+needs approval*, in the skill itself, so unsafe defaults can't sneak
+in via prompt phrasing.
 
 ### 2.1 Why backstory injection, not system-prompt injection?
 
@@ -683,9 +725,16 @@ Rollback if: <named condition> — <what to do>.
 4. <Observable check.>
 Pass: <conjunction of the checks above>.
 Fail action: <named recovery — usually "return to <layer/step>">.
+
+## Agentic capabilities
+- **Tools required:** <concrete tool names; reject "all" or "tbd">
+- **Subagents:** <when to dispatch and what role; or "none" with a reason>
+- **Memory writes:** <facts to persist via the project-memory backend>
+- **Escalate when:** <named conditions requiring user / architect / on-call>
+- **Autonomy budget:** <what's autonomous vs what needs explicit approval>
 ```
 
-The five layers do different jobs:
+The six layers do different jobs:
 
 - **`## Think first`** — 3-4 reflective questions in the agent's voice,
   specific to *this* skill's domain. Their job is to make the agent
@@ -714,20 +763,30 @@ The five layers do different jobs:
   an artifact to grep, a count to verify, a comparison to make.
   Subjective checks ("the code is clean") are rejected — checks must
   be auditable by another agent or a CI job.
+- **`## Agentic capabilities`** — five required bullets that make
+  the skill deployable by a runtime: `Tools required`, `Subagents`,
+  `Memory writes`, `Escalate when`, `Autonomy budget`. Tools are named
+  concretely (`rg`, `git`, `test runner`, `FileReadTool`, etc.).
+  Subagents say either when to dispatch and what role, or "none" with
+  the reason. Memory writes specify facts to persist for future
+  sessions. Escalate names conditions and the escalation target.
+  Autonomy budget says what's in-scope and what needs approval.
 
 Constraints:
-- ≤ 90 lines total (Think first + Reasoning + Plan + rules + Validation).
+- ≤ 110 lines total (Think first + Reasoning + Plan + rules +
+  Validation + Agentic capabilities).
 - 3–4 thinking questions, 3–5 reasoning steps, 3–5 plan actions, ≤ 10
-  imperative rules, 3–5 validation checks.
+  imperative rules, 3–5 validation checks, exactly 5 agentic bullets.
 - One sentence per item, present tense, action-first for rules, plan,
   and validation checks; question form for `## Think first`; imperative
-  form for `## Reasoning` steps.
+  form for `## Reasoning` steps; declarative form for agentic bullets.
 - No anecdotes, no rationale paragraphs. Anecdotes go here in
   `SUPERPOWERS.md`.
 - File name is kebab-case and matches the heading.
 - Skill must be checkable: a reviewer can audit one output at a time
   against the thinking prompts, the reasoning trace, the plan
-  commitments, the rules, and the validation receipt.
+  commitments, the rules, the validation receipt, and the agentic
+  deployment contract.
 
 ### 5.2 Submission checklist
 
@@ -737,10 +796,11 @@ Constraints:
 - [ ] `## Reasoning` section present with ≥ 3 numbered inference steps.
 - [ ] `## Plan` section present with ≥ 3 numbered actions, "Definition of done", and "Rollback if".
 - [ ] `## Validation` section present with ≥ 3 numbered observable checks, "Pass:", and "Fail action:".
-- [ ] Section order is `Think first` → `Reasoning` → `Plan` → numbered rules → `Validation`.
+- [ ] `## Agentic capabilities` section present with all 5 markers: Tools, Subagents, Memory writes, Escalate, Autonomy.
+- [ ] Section order is `Think first` → `Reasoning` → `Plan` → numbered rules → `Validation` → `Agentic capabilities`.
 - [ ] Numbered rules section present.
 - [ ] Added to `tests/test_skills_loader.py::REQUIRED_SKILLS`.
-- [ ] `pytest tests/` passes (file exists, heading, all four sections, order, all counts and markers).
+- [ ] `pytest tests/` passes (file exists, heading, all five sections, order, all counts and markers).
 - [ ] Catalog entry added to §3 here, including triggers, inverse,
   working signal, companions.
 - [ ] If the skill changes implementer behavior, add at least one new
@@ -806,6 +866,23 @@ Constraints:
   the same standard, but the validation expresses it as observable
   evidence. If the validation is just "Definition of done = true",
   it's not validation — it's an assertion.
+- **Agentic capabilities with vague tool lists.** "Whatever tools the
+  agent has", "TBD", or "general-purpose tools" are rejected. Name
+  concrete tools the runtime can wire in (`rg`, `git`, `pytest`,
+  `FileReadTool`, etc.). A reviewer must be able to read the bullet
+  and configure the agent.
+- **Autonomy budget that's just "use judgment".** The autonomy bullet
+  must name what the agent does without approval AND what requires
+  approval. "Use judgment" is rejected because it lets the agent
+  silently expand its envelope. If the boundary is hard to define,
+  pick the conservative side and document the exception path.
+- **Memory writes that are open-ended.** "Whatever seems useful" is
+  rejected. Name the specific facts to persist — what becomes useful
+  in a future session is a design decision, not a runtime call.
+- **Escalation conditions that never fire.** If "Escalate when:"
+  describes a condition that's impossible for the skill's normal
+  operation to reach, it's not real. The condition must be reachable
+  by a plausible failure mode in this skill's scope.
 
 ---
 

@@ -31,6 +31,13 @@ At each step boundary, verify:
 Pass: verify green + outcomes match + markers current + no improvisation.
 Fail action: halt; surface state to the user; do not advance to the next step.
 
+## Agentic capabilities
+- **Tools required:** depends on the plan; the plan itself declares the tools each step needs.
+- **Subagents:** none — execution is single-agent unless the plan explicitly dispatches them.
+- **Memory writes:** Per step: (intent, outcome, deviation if any) for future executors.
+- **Escalate when:** Reality has drifted from the plan in a way the rollback path doesn't cover.
+- **Autonomy budget:** Execute steps as written. Any deviation requires a plan update first, not improvisation.
+
 1. Read the entire plan before touching anything.
 2. Execute one step at a time; verify before proceeding.
 3. If a step fails, do NOT improvise — report the failure with state and ask.

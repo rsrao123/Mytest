@@ -31,6 +31,13 @@ Before pinging the reviewer, verify:
 Pass: green + pre-emptive + single concern + draft-state-correct.
 Fail action: fix locally and rewrite description; don't burn reviewer time.
 
+## Agentic capabilities
+- **Tools required:** linters, formatters, test runner, PR creator.
+- **Subagents:** Dispatch a self-review subagent (loaded with the `giving-code-review` skill) before requesting human review.
+- **Memory writes:** Persist (PR → questions pre-empted) so future PR descriptions improve.
+- **Escalate when:** Self-review surfaces a CRITICAL finding — fix it before requesting human review.
+- **Autonomy budget:** Open and request review autonomously. Force-merge or unblock-review requires user approval.
+
 1. Self-review first. Run the diff through your own eyes and the linters before paging anyone.
 2. Write the description so the reviewer can pick it up cold: what + why + how to verify.
 3. Pre-empt the obvious questions in the description ("I considered X but chose Y because…").

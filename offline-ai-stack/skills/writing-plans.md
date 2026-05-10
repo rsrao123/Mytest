@@ -32,6 +32,13 @@ Before approval, verify:
 Pass: goal + per-step trio + out-of-scope + executor sign-off.
 Fail action: rewrite the failing step; the plan isn't ready for execution.
 
+## Agentic capabilities
+- **Tools required:** FileWriteTool (plan file), executor simulator.
+- **Subagents:** Dispatch an executor-simulator subagent to test the plan's executability before approval.
+- **Memory writes:** Persist (project → plan template, common steps) so future plans reuse known-good structure.
+- **Escalate when:** A step can't have a rollback (irreversible) — design the plan around the irreversibility, with the user.
+- **Autonomy budget:** Draft + iterate autonomous. Final approval requires the executor agent or a human to sign off.
+
 A plan must contain:
 - Goal (one sentence, outcome-shaped)
 - Acceptance criteria (testable)

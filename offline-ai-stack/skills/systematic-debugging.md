@@ -31,6 +31,13 @@ Before declaring fixed, verify:
 Pass: deterministic repro + record + cause-targeted fix + regression test.
 Fail action: re-read the relevant code; speculation needs another reset before the next attempt.
 
+## Agentic capabilities
+- **Tools required:** debugger or strategic logger, test runner (deterministic repro), `git bisect`.
+- **Subagents:** Dispatch experiment-runner subagents for parallel falsification of multiple hypotheses.
+- **Memory writes:** Persist (bug → hypothesis chain, falsification outcomes) — accumulates debugging wisdom.
+- **Escalate when:** 3 hypotheses fail in a row — pause, re-read code; speculation isn't working.
+- **Autonomy budget:** Trace + fix autonomously. Debugging in production requires explicit user approval.
+
 1. State the expected behavior precisely.
 2. State the observed behavior precisely.
 3. Form a hypothesis. Predict what would prove it wrong.

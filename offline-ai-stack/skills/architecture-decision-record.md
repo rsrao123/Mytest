@@ -30,6 +30,13 @@ Before declaring the ADR Accepted, verify:
 Pass: all 4 checks green + the ADR is discoverable from `docs/adr/`.
 Fail action: return to Plan step 1; circulate the draft for the missed dimension.
 
+## Agentic capabilities
+- **Tools required:** FileReadTool, FileWriteTool (ADR file), git (log/blame on touched files).
+- **Subagents:** Dispatch an architect-review subagent for stakeholder consultation; never self-approve.
+- **Memory writes:** Persist (decision, alternatives rejected, key tradeoff axis) to project-memory.
+- **Escalate when:** A hard constraint was missed and an Accepted ADR must be superseded.
+- **Autonomy budget:** Draft + circulate is autonomous; declaring "Accepted" requires ≥ 1 stakeholder sign-off.
+
 Use this template for every non-trivial architectural choice. File it under `docs/adr/NNNN-title.md`.
 
 ```

@@ -31,6 +31,13 @@ Before requesting review, verify:
 Pass: order + size + bisectable + flag-off-first.
 Fail action: rebase to split; rerun bisect.
 
+## Agentic capabilities
+- **Tools required:** git (rebase, bisect, log, commit), test runner, build runner.
+- **Subagents:** none — incrementality is per-agent.
+- **Memory writes:** Persist (PR → split pattern, sequence) so similar future PRs are split the same way.
+- **Escalate when:** A behavior change can't be flag-gated — risk profile needs explicit user approval.
+- **Autonomy budget:** Split / rebase / sequence autonomously. Force-push to shared branches requires user approval.
+
 1. Aim for small, reviewable diffs (≤ ~200 lines net). Bigger diffs hide mistakes and stall reviews.
 2. Land structural changes first (renames, extracts, moves), then behavior changes — never bundle them.
 3. Each commit must compile and pass tests. The chain should be `git bisect`-able.

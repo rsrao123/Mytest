@@ -31,6 +31,13 @@ After the implementation lands, verify:
 Pass: 4 paths + typed error + structured logs + idempotency.
 Fail action: return to Plan step 1; idempotency missing means retries unsafe.
 
+## Agentic capabilities
+- **Tools required:** test runner, observability (structured logs, metrics).
+- **Subagents:** Dispatch a test-writer subagent to cover the 4 paths (success / permanent / eventual / exhausted).
+- **Memory writes:** Persist (operation → idempotency strategy, retry budget) so future code stays consistent.
+- **Escalate when:** The operation can't be made idempotent — retries are unsafe; redesign first.
+- **Autonomy budget:** Retry-around-IO autonomous. Adding retries to mutating operations requires explicit approval.
+
 1. **Classify before retrying.** Transient (network blip, 503) → retry. Permanent (400, 401, 422) → don't.
 2. Every retry needs a budget: max attempts AND max total time. Unbounded retries are an outage.
 3. Exponential backoff with full jitter (`random.uniform(0, base * 2**n)`) — fixed sleeps cause thundering herds.

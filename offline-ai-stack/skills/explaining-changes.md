@@ -31,6 +31,13 @@ Before merging, verify:
 Pass: why-first + alternatives + caveats + cold-reader-passed.
 Fail action: rewrite description before merge.
 
+## Agentic capabilities
+- **Tools required:** git (log, diff, blame), FileReadTool (for issue / spec / ADR context).
+- **Subagents:** Dispatch a "cold reader" subagent to validate the description before merge.
+- **Memory writes:** Persist (change type → message template) so similar changes get consistent why-statements.
+- **Escalate when:** No clear "why" exists — the change shouldn't merge until one does; ask the requester.
+- **Autonomy budget:** Author messages autonomously. Final wording on user-facing changelogs requires approval.
+
 The audience for a commit message and PR description is *future-you reading git blame at 2am*. Write for them.
 
 1. Lead with *why*, not *what*. The diff already shows what.

@@ -31,6 +31,13 @@ Before merging, verify:
 Pass: no caller-less abstractions + no premature extracts + notes present + minimal diff.
 Fail action: inline the abstraction; ship the simple form.
 
+## Agentic capabilities
+- **Tools required:** rg (count occurrences before extracting), git (delete confidently).
+- **Subagents:** Dispatch an "is this used?" search subagent before keeping any abstraction.
+- **Memory writes:** Persist (deferred extraction → unlock condition) so future agents know when to revisit.
+- **Escalate when:** Deleting an unused abstraction would change a public API — file as deprecation, not deletion.
+- **Autonomy budget:** Inline + delete unused autonomously. Deleting public-API symbols requires a deprecation cycle.
+
 1. Build for the requirement in front of you. Not the one you're imagining for next quarter.
 2. Three similar lines beat a premature abstraction. Wait for the fourth before extracting.
 3. No options, flags, or knobs without a current caller that needs them.

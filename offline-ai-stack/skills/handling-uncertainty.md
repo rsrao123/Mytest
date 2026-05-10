@@ -31,6 +31,13 @@ Before returning output, verify:
 Pass: every fact tagged + 0 fabrications + uncertainties surfaced.
 Fail action: file a correction; identify the cited source for each unverified fact, or remove it.
 
+## Agentic capabilities
+- **Tools required:** AskUserQuestion (or equivalent), FileReadTool (verify guesses), Bash (run experiments).
+- **Subagents:** none — uncertainty is per-agent state, not delegable.
+- **Memory writes:** Persist (project → known facts with citation) so future sessions don't re-guess.
+- **Escalate when:** A guess is too costly to verify cheaply — ask the user before proceeding.
+- **Autonomy budget:** Verify cheaply autonomously. Fabricating to fill a gap is never permitted under any budget.
+
 1. State your confidence explicitly. "I'm sure" / "I think" / "I'm guessing" are different signals — surface them.
 2. When you're guessing, run the cheapest experiment that converts the guess into knowledge before acting.
 3. If you can't experiment cheaply, ask. One clarifying question now beats one rolled-back PR later.

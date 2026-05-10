@@ -31,6 +31,13 @@ Before recommending, verify:
 Pass: count ≥ 5 + scored + top-two + axis named.
 Fail action: return to Plan step 1; convergence happened too early.
 
+## Agentic capabilities
+- **Tools required:** none — pure ideation.
+- **Subagents:** Dispatch a contrarian subagent (higher temperature) to challenge the obvious direction.
+- **Memory writes:** Persist (problem, top 2 directions, chosen tradeoff axis) for future similar problems.
+- **Escalate when:** All 5+ directions look equally weak — re-scope the problem with the user.
+- **Autonomy budget:** Surface top-2 with the tradeoff axis. Choosing one requires a user-named axis.
+
 1. Generate at least 5 distinct directions before evaluating any.
 2. Force variety: include the obvious, the contrarian, the simplest viable, and the most ambitious.
 3. Score each on (a) effort, (b) impact, (c) reversibility.

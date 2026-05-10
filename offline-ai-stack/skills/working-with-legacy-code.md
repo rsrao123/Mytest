@@ -31,6 +31,13 @@ Before pushing, verify:
 Pass: 3 isolated commits + history review.
 Fail action: rebase to split; the bundle is not acceptable for legacy code.
 
+## Agentic capabilities
+- **Tools required:** git (log, blame), test runner, rg, characterization-test scaffolder.
+- **Subagents:** Dispatch a git-history-reviewer subagent to recover institutional context for the touched lines.
+- **Memory writes:** Persist (legacy file → contract, weird-parts, history notes) so future edits inherit context.
+- **Escalate when:** Characterization tests fail during refactor — revert; the refactor wasn't safe.
+- **Autonomy budget:** Characterize + safe-refactor autonomous. Rewriting legacy modules requires architect + ADR.
+
 1. Characterize before you change. Add tests that pin current behavior — *especially* the weird parts. Those are the contract.
 2. Don't refactor and feature-add in the same PR. Sequence: characterize → refactor under green tests → add feature.
 3. Resist the urge to rewrite. Rewrites underestimate the implicit knowledge encoded in the existing code.

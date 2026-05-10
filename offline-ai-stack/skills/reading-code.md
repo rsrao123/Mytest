@@ -31,6 +31,13 @@ Before editing, verify:
 Pass: tests-first + path-traced + style-named + edit-plan-aligned.
 Fail action: re-read another path; the original style read was wrong.
 
+## Agentic capabilities
+- **Tools required:** FileReadTool, rg, git (log, blame), test runner (to extract contract).
+- **Subagents:** none — reading is single-agent; a second reader is the next agent in the pipeline.
+- **Memory writes:** Persist (file → style summary, contract notes) for future edits to the same file.
+- **Escalate when:** The file's intent is genuinely unclear — ask the original author or open the design doc.
+- **Autonomy budget:** Read-only; no modifications during the understanding phase.
+
 Before you change code, understand it.
 
 1. Read the test file first. Tests document the contract better than docstrings.

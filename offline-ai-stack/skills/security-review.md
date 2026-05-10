@@ -31,6 +31,13 @@ Before triage decision, verify per finding:
 Pass: schema complete + class named + triage explicit + reproducer for HIGH+.
 Fail action: gather missing evidence before triage; do not approve incomplete findings.
 
+## Agentic capabilities
+- **Tools required:** rg (sink / source patterns), bandit, semgrep, gitleaks, trivy, test runner (PoC reproducer).
+- **Subagents:** Dispatch parallel scanners (bandit + semgrep + gitleaks) and aggregate findings.
+- **Memory writes:** Persist (project → vuln class → file:line → severity) for trend tracking.
+- **Escalate when:** A CRITICAL finding is reachable from a public surface — page security on-call.
+- **Autonomy budget:** MEDIUM / LOW findings autonomous. HIGH / CRITICAL require security-team triage.
+
 Audit the code for these specific vulnerability classes. For each finding, report:
 SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 

@@ -31,6 +31,13 @@ After integration, verify:
 Pass: scopes + outputs + tests + architect sign-off.
 Fail action: sequence overlapping subagents; rerun with the architect's revised decomposition.
 
+## Agentic capabilities
+- **Tools required:** subagent dispatcher, file-scope tracker, integration-test runner.
+- **Subagents:** This skill *is* subagent-driven development; the architect arbitrates conflicts.
+- **Memory writes:** Persist (task → decomposition pattern, file scopes, integration test) for similar future tasks.
+- **Escalate when:** Subagent outputs conflict structurally — escalate to architect; never silent-merge.
+- **Autonomy budget:** Up to N parallel subagents (project policy). Cross-cutting integration is single-agent.
+
 For tasks larger than ~50 LOC of changes:
 1. Decompose into independent subtasks.
 2. Spawn a focused subagent per subtask with a tightly scoped prompt and only the files it needs.

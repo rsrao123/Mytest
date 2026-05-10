@@ -31,6 +31,13 @@ Before requesting review, verify:
 Pass: profile + 0 anti-patterns + 3 screenshots + 3 states.
 Fail action: revert to one profile and re-audit before re-requesting review.
 
+## Agentic capabilities
+- **Tools required:** screenshot tool, browser automation (Playwright via `browser-use`), shadcn/ui CLI.
+- **Subagents:** Dispatch a design-review subagent (with this skill loaded) for self-audit before requesting human review.
+- **Memory writes:** Persist (project → aesthetic profile + component allowlist) so future PRs stay consistent.
+- **Escalate when:** A new component class is needed that's not in shadcn — design-system change.
+- **Autonomy budget:** Compose existing primitives autonomously. New components or theme changes require design-lead approval.
+
 ## Anti-patterns (never produce these by default)
 - Purple/blue gradient hero sections
 - Glassmorphism (backdrop-blur on every card)

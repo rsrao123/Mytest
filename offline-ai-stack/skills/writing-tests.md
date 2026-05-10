@@ -31,6 +31,13 @@ Before merging, verify:
 Pass: name + AAA + mutation-test passed + behavior-only assertions.
 Fail action: rewrite the test; if it can't catch a deliberate bug, it's decorative.
 
+## Agentic capabilities
+- **Tools required:** test runner, coverage tool, mutation-test runner (mutmut / cosmic-ray) when available.
+- **Subagents:** Dispatch a mutation-test subagent to verify the test catches deliberate bugs.
+- **Memory writes:** Persist (unit → test patterns, edge cases covered) for future unit-test consistency.
+- **Escalate when:** The unit can't be tested without mocks on owned code — the unit's design is wrong; refactor first.
+- **Autonomy budget:** Test authoring autonomous. Skipping coverage targets requires PR-level justification.
+
 1. One concept per test. Name describes the case: `test_<unit>_<scenario>_<expected>`.
 2. Arrange / Act / Assert, in that order, with blank lines between. No surprises hidden in fixtures.
 3. Test behavior, not implementation. Asserting "method foo was called twice" is a smell.

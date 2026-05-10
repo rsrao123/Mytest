@@ -175,20 +175,55 @@ def test_each_skill_has_validation_section(name: str):
 
 
 @pytest.mark.parametrize("name", REQUIRED_SKILLS)
-def test_skill_section_order(name: str):
-    """`## Think first` → `## Reasoning` → `## Plan` → `## Validation` is the required order.
+def test_each_skill_has_agentic_section(name: str):
+    """Every skill must include a `## Agentic capabilities` section.
 
-    The five layers are sequential: deliberate (Think first) → reason (Reasoning) →
-    plan (Plan) → act (numbered rules) → validate (Validation, post-action evidence).
+    This section operationalizes the skill for an autonomous agent: required tools,
+    subagent dispatch, memory writes, escalation triggers, and the autonomy budget.
+    Required markers: Tools, Subagents, Memory writes, Escalate, Autonomy budget.
+    See docs/SUPERPOWERS.md §5 for the authoring contract.
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    assert "## Agentic capabilities" in body, (
+        f"{name}.md is missing the '## Agentic capabilities' section"
+    )
+    section = body.split("## Agentic capabilities", 1)[1]
+    end_idx = section.find("\n## ")
+    if end_idx < 0:
+        end_idx = len(section)
+    block = section[:end_idx].lower()
+
+    required_markers = [
+        "tools",          # "Tools required:" or "Tools:"
+        "subagents",
+        "memory writes",
+        "escalate",
+        "autonomy",       # "Autonomy budget:"
+    ]
+    missing = [m for m in required_markers if m not in block]
+    assert not missing, (
+        f"{name}.md '## Agentic capabilities' is missing markers: {missing}"
+    )
+
+
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_skill_section_order(name: str):
+    """Section order: `## Think first` → `## Reasoning` → `## Plan` → `## Validation` → `## Agentic capabilities`.
+
+    The six layers are sequential: deliberate (Think first) → reason (Reasoning) →
+    plan (Plan) → act (numbered rules) → validate (Validation) → operationalize
+    (Agentic capabilities, the agent-level deployment contract).
     """
     body = (SKILLS_DIR / f"{name}.md").read_text()
     think_idx = body.find("## Think first")
     reason_idx = body.find("## Reasoning")
     plan_idx = body.find("## Plan")
     val_idx = body.find("## Validation")
-    assert all(i >= 0 for i in (think_idx, reason_idx, plan_idx, val_idx))
-    assert think_idx < reason_idx < plan_idx < val_idx, (
-        f"{name}.md: section order must be Think first → Reasoning → Plan → Validation"
+    agentic_idx = body.find("## Agentic capabilities")
+    assert all(i >= 0 for i in (think_idx, reason_idx, plan_idx, val_idx, agentic_idx))
+    assert think_idx < reason_idx < plan_idx < val_idx < agentic_idx, (
+        f"{name}.md: section order must be Think first → Reasoning → Plan → "
+        f"Validation → Agentic capabilities"
     )
 
 

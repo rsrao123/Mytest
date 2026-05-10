@@ -31,6 +31,13 @@ Before merging the prompt, verify:
 Pass: ≥ baseline + schema valid + constraints separated + negative example present.
 Fail action: revert; iterate offline before re-merging.
 
+## Agentic capabilities
+- **Tools required:** promptfoo (or equivalent eval runner), baseline comparison tool, schema validator.
+- **Subagents:** Dispatch an eval-runner subagent to compare against the baseline on the shared test set.
+- **Memory writes:** Persist (prompt version → eval pass-rate, schema, baseline diff) for regression tracking.
+- **Escalate when:** Eval regresses on the existing test set — revert; do not ship.
+- **Autonomy budget:** Iterate prompts offline autonomously. Promoting to production requires reviewer sign-off.
+
 1. State the task in one sentence at the top.
 2. Provide 1–3 positive examples and 1 negative example (what NOT to produce).
 3. Specify the output schema explicitly (JSON keys, markdown structure, max length).

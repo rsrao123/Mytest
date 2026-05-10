@@ -31,6 +31,13 @@ After the task, verify:
 Pass: primary + cap + log + proposals filed.
 Fail action: trim the loaded skill set next time; over-composition is the default failure mode.
 
+## Agentic capabilities
+- **Tools required:** `skills.loader` (inject), the skill catalog reader.
+- **Subagents:** Meta-skill — applies to dispatcher decisions about which skills each subagent loads.
+- **Memory writes:** Per task: (skills loaded, primary, helped, hindered) — feeds the sunset rule.
+- **Escalate when:** Two loaded skills contradict and the conflict can't be resolved at the task level.
+- **Autonomy budget:** Loading 2-3 skills autonomous. Loading > 5 requires architect; usually the role is too broad.
+
 1. Load skills *before* you start the task, not mid-stream — the skill changes how you'd plan.
 2. Compose narrowly: pick the 2–3 skills that match the task, not all of them. Noise drowns signal.
 3. Skills override defaults; if a skill conflicts with another instruction, name the conflict explicitly and pick one.

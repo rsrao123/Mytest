@@ -30,6 +30,13 @@ Before pushing, verify:
 Pass: all 4 checks green.
 Fail action: rebase to split offending commits; rerun hooks.
 
+## Agentic capabilities
+- **Tools required:** git (status, diff, log, add, commit, rebase), pre-commit hook runner.
+- **Subagents:** Dispatch a pr-review subagent to self-review before push.
+- **Memory writes:** Persist (commit subject → chunks, scope, type) so future commits learn project conventions.
+- **Escalate when:** Pre-commit hooks fail twice on the same file — likely a design issue.
+- **Autonomy budget:** Stage / split / commit autonomous. Force-push or `--amend` on pushed commits requires explicit user approval.
+
 1. Atomic commits: one logical change per commit. If you'd describe it with "and", split it.
 2. Conventional Commits format: `type(scope): subject` where type ∈ {feat, fix, refactor, perf, test, docs, chore, build, ci}.
 3. Subject in imperative mood, ≤72 chars, no trailing period.

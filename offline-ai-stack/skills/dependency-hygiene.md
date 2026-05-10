@@ -31,6 +31,13 @@ Before merging the dep-add PR, verify:
 Pass: license + pinned + 0 CVEs + justified.
 Fail action: remove the dep, or replace with a smaller / better-maintained alternative.
 
+## Agentic capabilities
+- **Tools required:** pip-audit / npm audit, license checker, git, lockfile editor.
+- **Subagents:** Dispatch a security-review subagent to check transitive-dep risk.
+- **Memory writes:** Persist (dep, version, license, justification) to project-memory for next audit.
+- **Escalate when:** A new license type appears (LGPL / AGPL / non-OSI) — needs project-policy decision.
+- **Autonomy budget:** Pin + audit + bump autonomous. Adding a new dep requires an explicit reviewer approval.
+
 1. **Pin** every direct dependency to an exact version; let the lockfile pin transitives.
 2. **Audit** weekly: `pip-audit`, `npm audit`, `safety check`, `trivy fs`.
 3. **Update on a schedule**, not in panic. One dependency per PR; run the full test suite.

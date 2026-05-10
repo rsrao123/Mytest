@@ -31,6 +31,13 @@ Before opening any file, verify:
 Pass: target + filters + hits ≤ 50 + ranked top-3.
 Fail action: return to Plan step 1; the search was too broad.
 
+## Agentic capabilities
+- **Tools required:** rg, FileReadTool, git (log/blame for ranking).
+- **Subagents:** none — search is a leaf operation.
+- **Memory writes:** Persist (target → top-3 file:line) for reuse during the session.
+- **Escalate when:** 3 narrowing attempts return zero hits — ask the user for the canonical name.
+- **Autonomy budget:** Read-only; never modify files during search.
+
 1. Start with `rg -n` (ripgrep) at the repo root; prefer it over grep for speed.
 2. Search for the symbol's definition before chasing call sites: `rg -n "def <name>|fn <name>|function <name>|class <name>"`.
 3. Use word boundaries (`-w`) when names are short or common.

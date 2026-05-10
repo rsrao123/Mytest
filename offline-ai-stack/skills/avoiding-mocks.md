@@ -30,6 +30,13 @@ After writing the test, verify:
 Pass: 0 owned-code mocks + fakes documented + boundary mocks scoped + integration green.
 Fail action: refactor to use real or fake; do not relax the rule.
 
+## Agentic capabilities
+- **Tools required:** rg (audit `mock.patch` and `@patch`), test runner (integration mode).
+- **Subagents:** Dispatch a refactor subagent if eliminating mocks requires design changes.
+- **Memory writes:** Persist (boundary location, fake contract) for reuse across tests.
+- **Escalate when:** A real component is unavailable in CI and a fake's contract is non-trivial.
+- **Autonomy budget:** Replace mocks with fakes or reals autonomously. Design refactors require the architect.
+
 Default: don't mock. Mocks couple tests to implementation and rot fast.
 
 1. **Real things first.** Use the real DB (sqlite/test container), real filesystem (tmpdir), real clock when ±1s is fine.

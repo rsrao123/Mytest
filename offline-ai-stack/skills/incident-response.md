@@ -32,6 +32,13 @@ At incident closure, verify:
 Pass: all 4 artifacts present and linked from the incident record.
 Fail action: keep the incident open; complete the missing artifact before closure.
 
+## Agentic capabilities
+- **Tools required:** monitoring dashboards, deploy / rollback, feature-flag system, incident tracker, runbook search.
+- **Subagents:** During diagnosis, dispatch parallel diagnose subagents (logs, metrics, recent-deploys).
+- **Memory writes:** Persist (incident → root cause, fix, action items) — feeds future runbooks.
+- **Escalate when:** User pain is active and no obvious mitigation exists — page the incident commander immediately.
+- **Autonomy budget:** Impact-limited stabilizing actions autonomous. Production rollbacks require IC approval.
+
 Stabilize → Diagnose → Fix → Postmortem.
 
 1. **Stabilize first.** Roll back, disable the feature flag, or scale up — whatever stops user pain. Diagnosis comes after.

@@ -31,6 +31,13 @@ After fan-out completes, verify:
 Pass: scopes disjoint + self-reviews passed + integration green + conflicts logged.
 Fail action: sequence the conflicting subtasks and rerun.
 
+## Agentic capabilities
+- **Tools required:** subagent dispatcher (`CrewAI Process.parallel` or `asyncio.gather`), file-scope tracker.
+- **Subagents:** This skill *is* subagent dispatch. The architect arbitrates conflicts.
+- **Memory writes:** Persist (task → decomposition pattern, file scopes) for similar future tasks.
+- **Escalate when:** Scopes can't be made disjoint without restructuring the task — return to architect.
+- **Autonomy budget:** Up to N parallel subagents (project policy). Above that, sequence or split the task.
+
 When subtasks are independent (no shared file writes):
 - Dispatch them concurrently via CrewAI Process.parallel or asyncio.gather.
 - Set explicit non-overlapping file scopes per agent.

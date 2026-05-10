@@ -30,6 +30,13 @@ For each landed check, verify:
 Pass: all 4 checks green per landed check.
 Fail action: remove duplicates; convert internal-call checks to assertions or delete.
 
+## Agentic capabilities
+- **Tools required:** rg (audit `try/except` and `is None` patterns), test runner (adversarial fixtures).
+- **Subagents:** Dispatch a security-review subagent to confirm boundary placement.
+- **Memory writes:** Persist (boundary type → check pattern) so the same boundary class gets consistent checks.
+- **Escalate when:** Removing a redundant check would change a public-API failure mode.
+- **Autonomy budget:** Internal redundancy removal autonomous. Removing a public-API check requires approval.
+
 Defensive checks have a cost: they hide bugs and inflate code. Use them where they earn their keep.
 
 1. **Validate at boundaries** (HTTP, queue, file I/O, FFI). Trust internal calls.

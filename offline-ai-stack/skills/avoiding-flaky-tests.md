@@ -30,6 +30,13 @@ After landing the test, verify:
 Pass: 100/100 + no unbounded sleep + seeded RNG + frozen clock.
 Fail action: quarantine immediately; return to Plan step 1 with the residual nondeterminism named.
 
+## Agentic capabilities
+- **Tools required:** test runner (pytest / jest / etc.), git, rg (audit sleeps and seeds).
+- **Subagents:** Dispatch a runner subagent to execute the 100× rerun matrix in parallel.
+- **Memory writes:** Persist (test path, nondeterminism source, fix pattern) to project-memory.
+- **Escalate when:** Flake source is in shared infrastructure (CI runner, network) outside the test's control.
+- **Autonomy budget:** Quarantine + propose-fix is autonomous. Deleting a flaky test requires explicit approval.
+
 A flaky test is worse than no test — it trains the team to ignore failures.
 
 Sources of flakiness, in order of frequency:

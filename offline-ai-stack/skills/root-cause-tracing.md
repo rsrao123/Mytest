@@ -31,6 +31,13 @@ Before declaring fixed, verify:
 Pass: deterministic repro + 3+ whys + sibling search + cause-pinning test.
 Fail action: redo the trace; the fix was at the wrong layer.
 
+## Agentic capabilities
+- **Tools required:** test runner (deterministic repro), debugger or logger, `git bisect`, rg (sibling-symptom search).
+- **Subagents:** Dispatch a sibling-symptom search subagent in parallel with the why-trace.
+- **Memory writes:** Persist (bug → cause, level depth, regression test path) for sibling-symptom search reuse.
+- **Escalate when:** ≥ 5 levels of "why" with no convergence — design issue, not a bug; escalate to architect.
+- **Autonomy budget:** Trace + fix + regression test autonomous. Architectural fixes require architect approval + ADR.
+
 1. Don't fix at the first plausible layer. Ask "why" until the answer stops surprising you (≥3 levels deep).
 2. Reproduce the bug with the smallest possible input. If you can't reproduce, you don't understand it.
 3. Stack traces lie about *cause* but tell the truth about *location*. Use them to bisect, not to diagnose.

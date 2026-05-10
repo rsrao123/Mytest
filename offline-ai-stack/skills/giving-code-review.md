@@ -31,6 +31,13 @@ Before posting, verify:
 Pass: lead-with-good + tags + scope + verdict.
 Fail action: trim to in-scope comments; restate the verdict; post.
 
+## Agentic capabilities
+- **Tools required:** FileReadTool, git (log, blame), PR comment poster.
+- **Subagents:** none — review is single-agent; escalate via comment, not via fan-out.
+- **Memory writes:** Persist (file → recurring review findings) so later reviewers see prior context.
+- **Escalate when:** The diff reveals an architectural issue — request architect review; don't post a wall of comments.
+- **Autonomy budget:** Comments and verdict are autonomous. Posting BLOCK requires architect concurrence.
+
 1. Lead with what's good. Reviewers who only flag faults get tuned out.
 2. Distinguish blocking from non-blocking comments explicitly: prefix with `nit:`, `q:`, or `BLOCKER:`.
 3. Suggest, don't dictate. "Consider X because Y" beats "do X".
