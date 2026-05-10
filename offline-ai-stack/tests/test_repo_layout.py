@@ -29,6 +29,7 @@ EXPECTED_FILES = [
     "scripts/tear-down.sh",
     "scripts/voice_transcribe.py",
     "scripts/offline-prep.sh",
+    "scripts/offline-doctor.sh",
     "skills/loader.py",
     "templates/PLAN.md",
     "templates/CONVENTIONS.md",
@@ -42,6 +43,7 @@ EXECUTABLE_SCRIPTS = [
     "scripts/bring-up.sh",
     "scripts/tear-down.sh",
     "scripts/offline-prep.sh",
+    "scripts/offline-doctor.sh",
 ]
 
 

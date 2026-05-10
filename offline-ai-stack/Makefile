@@ -4,13 +4,16 @@ CREWS := $(STACK)/crews
 SCRIPTS := $(STACK)/scripts
 PROJECT ?= $(shell basename $$(pwd))
 
-.PHONY: help offline-prep bring-up tear-down compose-up compose-down ingest voice \
+.PHONY: help offline-prep offline-doctor offline-doctor-strict bring-up tear-down \
+        compose-up compose-down ingest voice \
         plan-ceo-review plan-eng-review plan-design-review plan-all-reviews \
         review security-review qa ship mem-recall eval
 
 help:
 	@echo "Targets:"
 	@echo "  offline-prep        One-shot: pre-cache scanner DBs, embed model, set telemetry-off"
+	@echo "  offline-doctor      Probe running stack for non-loopback egress (passive, 30s)"
+	@echo "  offline-doctor-strict  Same, but block egress via iptables (sudo, 30s)"
 	@echo "  bring-up            Start vLLM + docker stack (Section 21)"
 	@echo "  tear-down           Stop everything (preserves volumes)"
 	@echo "  compose-up          docker compose up -d"
@@ -50,6 +53,12 @@ voice:
 
 offline-prep:
 	bash $(SCRIPTS)/offline-prep.sh
+
+offline-doctor:
+	bash $(SCRIPTS)/offline-doctor.sh --probe-workload 30
+
+offline-doctor-strict:
+	bash $(SCRIPTS)/offline-doctor.sh --strict --probe-workload 30
 
 plan-ceo-review:
 	python $(CREWS)/exec_review.py --role ceo --plan $(PLAN)

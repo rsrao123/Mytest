@@ -1,27 +1,37 @@
 # Single-file consolidation of every dockerized service in the stack.
 # vLLM is NOT here — it runs natively under systemd (see configs/vllm-*.service).
 #
+# Strict-offline operation:
+#   - Every service has `pull_policy: never` so `docker compose up` never
+#     reaches dockerhub/ghcr/etc. Pre-pull images during offline-prep.
+#   - Every service that ships default-on telemetry is opted out via env vars
+#     (ChromaDB → PostHog, Grafana → usage stats, Forgejo → update check,
+#     Open WebUI → Scarf analytics).
+#
 # Usage:
 #   export FORGEJO_OAUTH_CLIENT=...     # from Forgejo Settings > Applications
 #   export FORGEJO_OAUTH_SECRET=...
 #   export WOODPECKER_AGENT_SECRET=$(openssl rand -hex 32)
 #   docker compose up -d
-#
-# Hostnames inside the compose network resolve by service name, so
-# Woodpecker reaches Forgejo at http://forgejo:3000 (no host-gateway hack).
 
 services:
   chroma:
     image: chromadb/chroma:latest
+    pull_policy: never
     container_name: chroma
     restart: unless-stopped
     ports:
       - "127.0.0.1:8002:8000"
+    environment:
+      # ChromaDB ships with anonymous telemetry to PostHog enabled by default.
+      ANONYMIZED_TELEMETRY: "false"
+      ALLOW_RESET: "false"
     volumes:
       - ${HOME}/offline-ai-stack/memory:/chroma/chroma
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
+    pull_policy: never
     container_name: open-webui
     restart: unless-stopped
     ports:
@@ -34,6 +44,10 @@ services:
       # ENABLE_RAG_LOCAL_WEB_FETCH intentionally NOT set — would make external HTTP calls.
       ENABLE_OPENAI_API: "true"
       WEBUI_AUTH: "false"
+      # Telemetry opt-outs: Scarf is the analytics layer baked into the image.
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "1"
+      ANONYMIZED_TELEMETRY: "false"
     volumes:
       - open-webui:/app/backend/data
 
@@ -43,16 +57,22 @@ services:
 
   forgejo:
     image: codeberg.org/forgejo/forgejo:9
+    pull_policy: never
     container_name: forgejo
     restart: unless-stopped
     ports:
       - "127.0.0.1:3002:3000"
       - "127.0.0.1:222:22"
+    environment:
+      # Forgejo "Check for updates" on the admin dashboard hits the upstream.
+      FORGEJO__server__OFFLINE_MODE: "true"
+      FORGEJO__server__DISABLE_SSH: "false"
     volumes:
       - ${HOME}/offline-ai-stack/forgejo:/data
 
   woodpecker-server:
     image: woodpeckerci/woodpecker-server:latest
+    pull_policy: never
     container_name: woodpecker-server
     restart: unless-stopped
     depends_on: [forgejo]
@@ -72,6 +92,7 @@ services:
 
   woodpecker-agent:
     image: woodpeckerci/woodpecker-agent:latest
+    pull_policy: never
     container_name: woodpecker-agent
     restart: unless-stopped
     depends_on: [woodpecker-server]
@@ -83,6 +104,7 @@ services:
 
   dcgm-exporter:
     image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    pull_policy: never
     container_name: dcgm-exporter
     restart: unless-stopped
     ports:
@@ -97,6 +119,7 @@ services:
 
   prometheus:
     image: prom/prometheus
+    pull_policy: never
     container_name: prometheus
     restart: unless-stopped
     depends_on: [dcgm-exporter]
@@ -108,11 +131,18 @@ services:
 
   grafana:
     image: grafana/grafana
+    pull_policy: never
     container_name: grafana
     restart: unless-stopped
     depends_on: [prometheus]
     ports:
       - "127.0.0.1:3003:3000"
+    environment:
+      # Grafana defaults: usage stats + update checks. All off.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_ANALYTICS_FEEDBACK_LINKS_ENABLED: "false"
     volumes:
       - grafana-data:/var/lib/grafana
 

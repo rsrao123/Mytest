@@ -6,6 +6,13 @@ After=network.target nvidia-persistenced.service
 Type=simple
 User=cemilac
 Environment=HF_HOME=/home/cemilac/offline-ai-stack/hf-cache
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+Environment=HF_HUB_DISABLE_TELEMETRY=1
+Environment=HF_HUB_DISABLE_IMPLICIT_TOKEN=1
+Environment=DO_NOT_TRACK=1
+Environment=VLLM_NO_USAGE_STATS=1
+Environment=VLLM_DO_NOT_TRACK=1
 ExecStart=/home/cemilac/ai-stack/bin/vllm serve mistralai/Devstral-Small-2-24B-Instruct-2512 \
   --host 0.0.0.0 --port 8001 --max-model-len 131072 \
   --gpu-memory-utilization 0.28 --enable-auto-tool-choice \

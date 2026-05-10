@@ -13,20 +13,67 @@ pulls), the stack runs **with the network unplugged**. The guarantee covers:
 - All agent frameworks (CrewAI, LangGraph) — only call localhost vLLM
 - All storage (Chroma, Forgejo, Woodpecker, Langfuse, Open WebUI) — self-hosted
 - Memory layer (`scripts/claude_mem_local.py`) — Chroma + local LLM
-- Telemetry — disabled (Aider analytics, LangChain tracing, LangSmith, `DO_NOT_TRACK=1`)
+- Telemetry — disabled everywhere via system-wide env vars (see below)
 
-To enable the guarantee, run **once with internet**:
+### What's removed
+- **SearXNG** — metasearch proxy that queries Google / Bing / DDG
+- **browser-use / Playwright** — drives a real browser at real URLs
+- **`safety`** scanner — offline DB is commercial; `pip-audit` covers same ground via OSV
+
+### Telemetry opt-outs (system-wide)
+Written to `/etc/environment` by `make offline-prep`:
+
+| Tool | Variable(s) |
+|---|---|
+| ChromaDB → PostHog | `ANONYMIZED_TELEMETRY=false` |
+| HuggingFace Hub | `HF_HUB_DISABLE_TELEMETRY=1`, `HF_HUB_DISABLE_IMPLICIT_TOKEN=1` |
+| CrewAI | `CREWAI_TELEMETRY_OPT_OUT=true`, `CREWAI_DISABLE_TELEMETRY=true`, `OTEL_SDK_DISABLED=true` |
+| LangChain / LangSmith | `LANGCHAIN_TRACING_V2=false`, `LANGSMITH_TRACING=false`, `LANGSMITH_API_KEY=` |
+| Aider | `AIDER_ANALYTICS=false`, `AIDER_ANALYTICS_DISABLE=1` |
+| promptfoo | `PROMPTFOO_DISABLE_TELEMETRY=1` |
+| vLLM | `VLLM_NO_USAGE_STATS=1`, `VLLM_DO_NOT_TRACK=1` |
+| Universal | `DO_NOT_TRACK=1`, `TELEMETRY_DISABLED=1`, `SCARF_NO_ANALYTICS=true` |
+| Provider kill-switches | `OPENAI_API_KEY=local`, `OPENAI_API_BASE=http://localhost:8000/v1`, `ANTHROPIC_API_KEY=` |
+
+### Per-service opt-outs (in `docker-compose.yml`)
+
+| Service | Variable(s) |
+|---|---|
+| chroma | `ANONYMIZED_TELEMETRY=false`, `ALLOW_RESET=false` |
+| open-webui | `SCARF_NO_ANALYTICS=true`, `DO_NOT_TRACK=1`, `ANONYMIZED_TELEMETRY=false` |
+| forgejo | `FORGEJO__server__OFFLINE_MODE=true` |
+| grafana | `GF_ANALYTICS_REPORTING_ENABLED=false`, `GF_ANALYTICS_CHECK_FOR_UPDATES=false`, `GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false`, `GF_ANALYTICS_FEEDBACK_LINKS_ENABLED=false` |
+
+Every service in `docker-compose.yml` also has `pull_policy: never`, so
+`docker compose up` never reaches dockerhub / ghcr / etc.
+
+### vLLM systemd units
+`configs/vllm-primary.service` and `configs/vllm-devstral.service` set:
+- `HF_HUB_OFFLINE=1` (no model-metadata checks)
+- `TRANSFORMERS_OFFLINE=1`
+- `HF_HUB_DISABLE_TELEMETRY=1`
+- `VLLM_NO_USAGE_STATS=1`, `VLLM_DO_NOT_TRACK=1`
+
+These are NOT in `/etc/environment` because they'd break a future
+`huggingface-cli download`. They live on the systemd unit so vLLM never
+phones home at boot.
+
+### Verification
+
+After `make offline-prep` and `make bring-up`, run:
 ```bash
-make offline-prep   # downloads model files, scanner DBs, sets telemetry-off
+make offline-doctor          # passive 30s probe; reports any non-loopback ESTAB sockets
+make offline-doctor-strict   # 30s probe with iptables blocking egress (sudo)
 ```
 
-**Removed for strict offline:** SearXNG (metasearch proxy → external queries),
-browser-use / Playwright (drives real browser → real URLs), `safety` (its
-offline DB is commercial; `pip-audit` covers the same ground via OSV).
+The strict mode is the only real proof — it actively refuses any non-loopback
+connection during the probe window and reports any process that tried.
 
-The only remaining online dependency is the first-time model pull (~400 GB
-from HuggingFace) plus `apt`/`pip`/`docker pull` for the base system. Re-run
-`make offline-prep` every ~90 days to refresh CVE/OSV data.
+### The remaining online dependency
+
+The first-time model pull (~400 GB from HuggingFace) plus `apt`/`pip`/`docker
+pull` for the base system. Re-run `make offline-prep` every ~90 days to
+refresh CVE / OSV data.
 
 ## 0. Target machine
 

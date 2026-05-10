@@ -5,7 +5,16 @@ After=network.target nvidia-persistenced.service
 [Service]
 Type=simple
 User=cemilac
+# Cache and offline mode: models are pre-downloaded; never check HF Hub for updates.
 Environment=HF_HOME=/home/cemilac/offline-ai-stack/hf-cache
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+Environment=HF_HUB_DISABLE_TELEMETRY=1
+Environment=HF_HUB_DISABLE_IMPLICIT_TOKEN=1
+# vLLM does not phone home, but be explicit.
+Environment=DO_NOT_TRACK=1
+Environment=VLLM_NO_USAGE_STATS=1
+Environment=VLLM_DO_NOT_TRACK=1
 ExecStart=/home/cemilac/ai-stack/bin/vllm serve Qwen/Qwen3-Coder-Next \
   --host 0.0.0.0 --port 8000 --max-model-len 262144 \
   --gpu-memory-utilization 0.55 --enable-auto-tool-choice \
