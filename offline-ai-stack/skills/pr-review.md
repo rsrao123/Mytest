@@ -13,6 +13,15 @@ Audit each PR in this order, recording findings as you go:
 3. **Security / perf / style / docs** in turn — each finding has file:line evidence.
 4. Conclude with a one-word verdict and the top blocker (if any).
 
+## Plan
+For each PR:
+1. Read description + tests first; predict the diff before opening it.
+2. Walk the diff against your prediction; note divergences.
+3. Audit correctness / tests / security / perf / style / docs in turn; file:line every finding.
+4. Stop and summarize verdict + top blocker before posting the review.
+Definition of done: all 6 dimensions audited + verdict posted with file:line evidence.
+Rollback if: the review uncovers an architectural problem — escalate to the architect; don't try to fix it in this PR.
+
 For each PR, audit in this order and report findings with file:line refs.
 
 1. **Correctness** — does it do what the description claims? Edge cases? Off-by-ones?

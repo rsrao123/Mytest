@@ -13,6 +13,15 @@ Build the description in this order:
 3. Surface caveats: migrations, deploy ordering, feature flags, breaking changes.
 4. Lead the message with the why; close with how the reader can verify locally.
 
+## Plan
+Before pushing:
+1. Draft the why in one sentence; rewrite if it describes the *what*.
+2. List rejected alternatives + caveats (migrations, deploy order, flags).
+3. Stop and reread as a cold reader; rewrite if you'd be confused.
+4. Land with the issue / spec / ADR link inline.
+Definition of done: future-you-at-2am can pick this up cold without scrolling to the diff.
+Rollback if: a reviewer asks "why" — the message failed; rewrite it before merging.
+
 The audience for a commit message and PR description is *future-you reading git blame at 2am*. Write for them.
 
 1. Lead with *why*, not *what*. The diff already shows what.

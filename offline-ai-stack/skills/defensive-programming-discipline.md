@@ -13,6 +13,14 @@ For each defensive check, work through:
 3. Predict the observable failure mode if the check is removed (typed exception, traceback, silent corruption).
 4. Conclude: keep at boundary / drop redundant / convert to assertion documenting an invariant.
 
+## Plan
+For each candidate check:
+1. Locate the trust boundary; place the check just on the inside.
+2. Walk callers and remove redundant downstream checks.
+3. Stop and add an adversarial-input fixture test against the boundary check.
+4. Definition of done: one validation per boundary; no duplicate upstream/downstream checks.
+Rollback if: a redundant check gets re-added in review — escalate to the architect for a project-wide policy decision.
+
 Defensive checks have a cost: they hide bugs and inflate code. Use them where they earn their keep.
 
 1. **Validate at boundaries** (HTTP, queue, file I/O, FFI). Trust internal calls.

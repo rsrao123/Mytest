@@ -13,6 +13,14 @@ Produce this trace before drafting the ADR:
 3. Identify the single tradeoff axis on which the surviving options differ.
 4. State the chosen option + the constraint or tradeoff it optimizes; name what you give up.
 
+## Plan
+Before declaring the ADR Accepted:
+1. List stakeholders who must review; circulate the draft to each.
+2. Stop and collect objections; if any name a missed hard constraint, return to Reasoning.
+3. File at `docs/adr/NNNN-<title>.md` and link it from the implementing PR.
+4. Definition of done: Status: Accepted on the file + linked from the PR.
+Rollback if: a missed hard constraint surfaces post-acceptance — supersede with a new ADR; never edit the old one.
+
 Use this template for every non-trivial architectural choice. File it under `docs/adr/NNNN-title.md`.
 
 ```

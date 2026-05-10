@@ -13,6 +13,15 @@ For each UI task, work through:
 3. Audit candidate against the anti-pattern list before opening the editor.
 4. Plan empty / loading / error states and breakpoint behavior at 375 / 768 / 1280 px.
 
+## Plan
+Before opening the editor:
+1. Pick ONE aesthetic profile and commit it in the PR description.
+2. List the 3-4 shadcn primitives that compose the layout.
+3. Stop and walk the anti-pattern list as a self-check.
+4. Build mobile-first; verify at 375 / 768 / 1280 px before requesting review.
+Definition of done: profile named + anti-patterns audited + 3 breakpoints verified + empty/loading/error states present.
+Rollback if: drift to a different profile mid-work — revert, pick one, commit it in the PR description.
+
 ## Anti-patterns (never produce these by default)
 - Purple/blue gradient hero sections
 - Glassmorphism (backdrop-blur on every card)

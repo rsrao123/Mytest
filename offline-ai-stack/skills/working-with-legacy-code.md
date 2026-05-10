@@ -13,6 +13,15 @@ Before changing legacy code, work through:
 3. Sequence: characterize → refactor under green → feature. Never bundle.
 4. Read git log/blame on the touched lines; recover the institutional context before deleting "obviously redundant" code.
 
+## Plan
+Before changing legacy code:
+1. Add characterization tests pinning current behavior — including the weird parts.
+2. Read git log/blame on the touched lines; recover the institutional context.
+3. Sequence: characterize → refactor under green → feature; never bundle.
+4. Stop after each phase; confirm green before continuing.
+Definition of done: characterized + refactored + feature, in three commits minimum, each green.
+Rollback if: characterization tests fail during refactor — the refactor changed behavior; revert the structural change.
+
 1. Characterize before you change. Add tests that pin current behavior — *especially* the weird parts. Those are the contract.
 2. Don't refactor and feature-add in the same PR. Sequence: characterize → refactor under green tests → add feature.
 3. Resist the urge to rewrite. Rewrites underestimate the implicit knowledge encoded in the existing code.

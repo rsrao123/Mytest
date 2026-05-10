@@ -13,6 +13,15 @@ For each step in the plan, work through:
 3. Execute, capture state at each substep, run the verify check.
 4. On failure: stop. Do not improvise. Report state + invoke the documented rollback path.
 
+## Plan
+For each step:
+1. Restate the step's intent + acceptance check before starting it.
+2. Verify preconditions; if reality has drifted, halt and update the plan rather than improvise.
+3. Execute the step; capture state at each substep.
+4. Stop and run the verify check; on failure, invoke the rollback path documented for this step.
+Definition of done: every step's verify check has passed; plan markers updated.
+Rollback if: any step fails its verify — execute the documented rollback; do not improvise a fix.
+
 1. Read the entire plan before touching anything.
 2. Execute one step at a time; verify before proceeding.
 3. If a step fails, do NOT improvise — report the failure with state and ask.

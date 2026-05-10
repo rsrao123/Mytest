@@ -114,17 +114,50 @@ def test_each_skill_has_reasoning_section(name: str):
 
 
 @pytest.mark.parametrize("name", REQUIRED_SKILLS)
-def test_skill_section_order(name: str):
-    """`## Think first` must precede `## Reasoning` in every skill.
+def test_each_skill_has_plan_section(name: str):
+    """Every skill must include a `## Plan` section: a domain-specific work program.
 
-    The two layers are sequential: deliberate (Think first) → reason (Reasoning) → act (rules).
+    The plan layer turns the reasoning verdict into an executable sequence with stop-gates,
+    a definition of done, and a rollback condition. See docs/SUPERPOWERS.md §5 for the
+    authoring contract.
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    assert "## Plan" in body, f"{name}.md is missing the '## Plan' section"
+    section = body.split("## Plan", 1)[1]
+    end_idx = section.find("\n## ")
+    if end_idx < 0:
+        end_idx = len(section)
+    plan_text = section[:end_idx]
+    numbered = [
+        line for line in plan_text.splitlines()
+        if line.strip()[:2].rstrip(".").isdigit() and "." in line.strip()[:3]
+    ]
+    assert len(numbered) >= 3, (
+        f"{name}.md '## Plan' has only {len(numbered)} numbered actions; need ≥ 3"
+    )
+    lower = plan_text.lower()
+    assert "definition of done" in lower, (
+        f"{name}.md '## Plan' is missing 'Definition of done'"
+    )
+    assert "rollback if" in lower, (
+        f"{name}.md '## Plan' is missing 'Rollback if'"
+    )
+
+
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_skill_section_order(name: str):
+    """`## Think first` → `## Reasoning` → `## Plan` is the required order in every skill.
+
+    The four layers are sequential: deliberate (Think first) → reason (Reasoning) →
+    plan (Plan) → act (numbered rules).
     """
     body = (SKILLS_DIR / f"{name}.md").read_text()
     think_idx = body.find("## Think first")
     reason_idx = body.find("## Reasoning")
-    assert think_idx >= 0 and reason_idx >= 0
-    assert think_idx < reason_idx, (
-        f"{name}.md: '## Think first' must appear before '## Reasoning'"
+    plan_idx = body.find("## Plan")
+    assert think_idx >= 0 and reason_idx >= 0 and plan_idx >= 0
+    assert think_idx < reason_idx < plan_idx, (
+        f"{name}.md: section order must be Think first → Reasoning → Plan"
     )
 
 

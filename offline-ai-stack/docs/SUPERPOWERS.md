@@ -32,6 +32,11 @@ deliberately terse and prescriptive; the *why* and the *how* live here.
   agent must produce as written output before acting. This makes the
   skill's logic auditable in the agent's response, not just in its
   outcome.
+- **Plan committed, not improvised** — every skill closes with a
+  `## Plan` block: an ordered work program with stop-gates, an explicit
+  definition of done, and a rollback condition. The agent commits to
+  the plan *before* touching the work product, so deviations are
+  visible.
 
 ### Non-goals
 - Replacing fine-tuning. Skills bias behavior; they don't change capability.
@@ -78,8 +83,8 @@ filesystem *is* the registry.
 
 ### 2.0 Anatomy of a skill file
 
-Every skill file has three sections in a fixed order — **deliberate →
-reason → act**:
+Every skill file has four sections in a fixed order — **deliberate →
+reason → plan → act**:
 
 ```
 # Skill: <Name>
@@ -96,6 +101,15 @@ reason → act**:
 3. <inference step 3 — check or experiment>
 4. <inference step 4 — conclude with a named choice>
 
+## Plan
+<one-line statement of when this work program runs>:
+1. <ordered action with exit criterion>
+2. <ordered action with exit criterion>
+3. Stop and <verify gate>: <what must be confirmed before continuing>
+4. <ordered action with exit criterion>
+Definition of done: <observable end state>.
+Rollback if: <named condition> — <what to do>.
+
 1. <imperative rule>
 2. <imperative rule>
 …
@@ -104,23 +118,39 @@ reason → act**:
 | Layer | Purpose | Form | Output the agent produces |
 |---|---|---|---|
 | `## Think first` | Metacognition: surface assumptions and tradeoffs before acting. | 3–4 reflective questions specific to the skill's domain. | None directly — the questions reshape the agent's plan. |
-| `## Reasoning` | Inference: a domain-specific procedure the agent walks through. | 3–5 numbered steps; observe → hypothesize → check → conclude. | A written reasoning trace inline in the agent's response. |
+| `## Reasoning` | Inference: a domain-specific procedure for figuring out what's right. | 3–5 numbered steps; observe → hypothesize → check → conclude. | A written reasoning trace inline in the agent's response. |
+| `## Plan` | Execution program: ordered actions with gates, definition of done, and rollback. | 3–5 numbered actions, ≥ 1 stop-gate, "Definition of done", "Rollback if". | A committed work program, posted before the work product appears. |
 | Numbered rules | Action: imperative checklist for the actual work. | Action-first sentences. | The work product (diff, review, plan, etc.). |
 
-All three layers are enforced by `tests/test_skills_loader.py`:
+All four layers are enforced by `tests/test_skills_loader.py`:
 
 - `test_each_skill_has_think_first_section` — ≥ 3 reflective prompts.
 - `test_each_skill_has_reasoning_section` — ≥ 3 numbered inference steps.
-- `test_skill_section_order` — `## Think first` precedes `## Reasoning`.
+- `test_each_skill_has_plan_section` — ≥ 3 numbered actions, plus
+  "Definition of done" and "Rollback if" markers.
+- `test_skill_section_order` — `## Think first` → `## Reasoning` →
+  `## Plan` order is mandatory.
 
 Rationale: the rule layer alone is easy to pattern-match without
-deliberation, especially under time pressure. Adding the thinking layer
-forces the agent to surface what it's assuming. Adding the reasoning
-layer forces the agent to *show its work* — which makes the skill
-auditable from the response, not just from the outcome. Empirically
-(see `promptfooconfig.yaml` baselines), the combination improves rule
-adherence on ambiguous cases more than longer rule lists do, and makes
-review by humans or downstream agents tractable.
+deliberation, especially under time pressure. The thinking layer
+forces the agent to surface what it's assuming. The reasoning layer
+forces the agent to *show its work* (auditable from the response, not
+just the outcome). The plan layer forces the agent to commit to a
+*sequence* with explicit gates, a named end state, and a rollback —
+so a deviation is loud, not silent. Empirically (see
+`promptfooconfig.yaml` baselines), the four-layer structure improves
+rule adherence on ambiguous cases more than longer rule lists do, and
+makes review by humans or downstream agents tractable.
+
+#### Reasoning vs. Plan — why both?
+
+Reasoning answers *"given this situation, what's the right thing?"*.
+Plan answers *"given the right thing, how do I execute with checkpoints
+and a rollback?"*. The same skill needs both because the agent fails
+in two distinct ways: by reaching a wrong conclusion (a reasoning
+failure) or by the right conclusion drifting during execution (a
+planning failure). Splitting them keeps each section tight and lets
+tests assert against each independently.
 
 ### 2.1 Why backstory injection, not system-prompt injection?
 
@@ -602,13 +632,22 @@ inject(release_mgr, "incident-response", "handling-failures-and-retries",
 3. <Check or experiment — what to verify before concluding.>
 4. <Conclude — what named choice to produce.>
 
+## Plan
+<One-line statement of when this work program runs>:
+1. <Ordered action with an exit criterion.>
+2. <Ordered action with an exit criterion.>
+3. Stop and <verify gate>: <what must be confirmed before continuing>.
+4. <Ordered action with an exit criterion.>
+Definition of done: <observable end state>.
+Rollback if: <named condition> — <what to do>.
+
 1. <Imperative sentence>.
 2. <Imperative sentence>.
 3. <Imperative sentence>.
 …
 ```
 
-The three layers do different jobs:
+The four layers do different jobs:
 
 - **`## Think first`** — 3-4 reflective questions in the agent's voice,
   specific to *this* skill's domain. Their job is to make the agent
@@ -622,20 +661,29 @@ The three layers do different jobs:
   by step") is rejected — the steps must encode the *specific* moves
   that this skill demands. The agent's written trace is the audit
   surface.
+- **`## Plan`** — 3-5 numbered actions the agent commits to before
+  touching the work product, plus at least one explicit stop-gate, a
+  Definition of done (observable end state), and a Rollback if
+  (named failure condition + recovery action). Plans without all three
+  are rejected. The plan layer makes execution drift loud rather than
+  silent.
 - **Numbered rules** — imperative, action-first, one sentence each.
-  This is the *do* layer that the deliberation and inference layers
-  feed into.
+  This is the *do* layer that the deliberation, inference, and planning
+  layers feed into.
 
 Constraints:
-- ≤ 50 lines total (Think first + Reasoning + rules).
-- 3–4 thinking questions, 3–5 reasoning steps, ≤ 10 imperative rules.
-- One sentence per item, present tense, action-first for rules; question
-  form for `## Think first`; imperative form for `## Reasoning` steps.
+- ≤ 70 lines total (Think first + Reasoning + Plan + rules).
+- 3–4 thinking questions, 3–5 reasoning steps, 3–5 plan actions, ≤ 10
+  imperative rules.
+- One sentence per item, present tense, action-first for rules and plan;
+  question form for `## Think first`; imperative form for `## Reasoning`
+  steps.
 - No anecdotes, no rationale paragraphs. Anecdotes go here in
   `SUPERPOWERS.md`.
 - File name is kebab-case and matches the heading.
 - Skill must be checkable: a reviewer can audit one output at a time
-  against the thinking prompts, the reasoning trace, and the rules.
+  against the thinking prompts, the reasoning trace, the plan
+  commitments, and the rules.
 
 ### 5.2 Submission checklist
 
@@ -643,10 +691,11 @@ Constraints:
 - [ ] Heading matches `# Skill: <Title Case>`.
 - [ ] `## Think first` section present with ≥ 3 domain-specific questions.
 - [ ] `## Reasoning` section present with ≥ 3 numbered inference steps.
-- [ ] `## Think first` precedes `## Reasoning` in the file.
+- [ ] `## Plan` section present with ≥ 3 numbered actions, "Definition of done", and "Rollback if".
+- [ ] Section order is `Think first` → `Reasoning` → `Plan` → numbered rules.
 - [ ] Numbered rules section present.
 - [ ] Added to `tests/test_skills_loader.py::REQUIRED_SKILLS`.
-- [ ] `pytest tests/` passes (file exists, heading, both sections, order, prompt counts).
+- [ ] `pytest tests/` passes (file exists, heading, all three sections, order, all counts and markers).
 - [ ] Catalog entry added to §3 here, including triggers, inverse,
   working signal, companions.
 - [ ] If the skill changes implementer behavior, add at least one new
@@ -681,6 +730,22 @@ Constraints:
   trace must end in a named, observable conclusion (a verdict, a
   classification, a chosen option, a typed error). Open-ended reasoning
   invites the agent to keep deliberating without acting.
+- **Plans without stop-gates.** A `## Plan` that's just a numbered list
+  with no explicit "Stop and …" pause is just a rule list with extra
+  steps. The whole point of the plan layer is to surface drift; without
+  a checkpoint, drift hides.
+- **Plans without a Definition of done.** If the plan can't name the
+  observable end state, the agent doesn't know when to stop. Tests
+  reject any plan missing this marker.
+- **Plans without a Rollback if.** If the plan can't name a failure
+  condition + a recovery action, the agent will improvise on failure —
+  which is exactly what `executing-plans` forbids. Tests reject any
+  plan missing this marker.
+- **Plans that duplicate the Reasoning section.** If the plan is just
+  the reasoning trace re-numbered, the skill doesn't have a real
+  execution program — the reasoning was masquerading as a plan. Add
+  stop-gates, exit criteria, and rollback to make it a real plan, or
+  collapse the two sections.
 
 ---
 

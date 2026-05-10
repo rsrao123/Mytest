@@ -13,6 +13,15 @@ For each refactor, work through:
 3. Apply the smallest single structural change; re-run all tests; confirm green again.
 4. Commit alone — never bundle with feature work or unrelated cleanups.
 
+## Plan
+For each refactor:
+1. Confirm full test suite green pre-change. (No green, no refactor.)
+2. Apply a single structural change.
+3. Stop and re-run the full suite; confirm green.
+4. Commit alone with a `refactor:` subject; never bundle with feature work.
+Definition of done: green-pre + green-post + isolated commit.
+Rollback if: tests fail post-change — revert the structural change; the refactor wasn't behavior-preserving.
+
 Tidy First. Behavior-preserving changes only.
 
 1. Separate refactor commits from feature commits. Never mix.

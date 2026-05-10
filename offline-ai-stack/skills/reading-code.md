@@ -13,6 +13,15 @@ Before changing any code, work through:
 3. Trace one path end-to-end (entry → exit), noting naming and error-handling conventions in flight.
 4. Restate the file's commit-to style; commit to matching it in your edit (or, if not, explain why in the PR).
 
+## Plan
+Before changing any file:
+1. Open the test file first; extract the implicit contract.
+2. Trace one entry-to-exit path in the production file; note local conventions.
+3. Stop and write a one-line summary of the file's style.
+4. Plan the edit so it matches that style; if it shouldn't, that's a refactor commit, not your task.
+Definition of done: one-line style summary + ≥ 1 path traced before any edit.
+Rollback if: the edit feels foreign to the file when re-read — reread another path; the style was wrong.
+
 Before you change code, understand it.
 
 1. Read the test file first. Tests document the contract better than docstrings.

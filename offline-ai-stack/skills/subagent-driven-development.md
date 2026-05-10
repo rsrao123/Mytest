@@ -13,6 +13,15 @@ For each task > ~50 LOC, work through:
 3. Define the integration step + the cross-cutting test that proves the parts compose.
 4. Plan failure handling: which subagent failures abort the run vs which are isolatable and recoverable.
 
+## Plan
+For tasks > ~50 LOC:
+1. Decompose into independent subtasks; map each to disjoint file scopes.
+2. Define each subagent's prompt + expected output schema (diff + rationale + self-review).
+3. Stop and have the architect confirm decomposition before dispatch.
+4. Run the subagents; integrate outputs; verify cross-cutting tests green.
+Definition of done: all subagent outputs integrated + cross-cutting tests green.
+Rollback if: subagent outputs conflict at merge — escalate to architect; do not silently force-merge.
+
 For tasks larger than ~50 LOC of changes:
 1. Decompose into independent subtasks.
 2. Spawn a focused subagent per subtask with a tightly scoped prompt and only the files it needs.

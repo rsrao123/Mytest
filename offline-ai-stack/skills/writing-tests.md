@@ -13,6 +13,15 @@ For each test, design in this order:
 3. **Act** — the single behavior under test.
 4. **Assert** on observable behavior, not implementation; mentally mutate the production code and confirm the test would fail.
 
+## Plan
+For each test:
+1. Name encodes (unit, scenario, expected); commit to it before writing the body.
+2. Arrange / Act / Assert sections are visually separated by blank lines.
+3. Stop and mentally mutate the production code; confirm the test would fail under the mutation.
+4. Run the test; commit at green.
+Definition of done: AAA visible + name encodes the case + mental-mutation test passed.
+Rollback if: mutation doesn't fail the test — the test is decorative; rewrite before merging.
+
 1. One concept per test. Name describes the case: `test_<unit>_<scenario>_<expected>`.
 2. Arrange / Act / Assert, in that order, with blank lines between. No surprises hidden in fixtures.
 3. Test behavior, not implementation. Asserting "method foo was called twice" is a smell.

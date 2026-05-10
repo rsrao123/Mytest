@@ -13,6 +13,15 @@ Before requesting review, work through:
 3. Confirm one PR per concern; if not, split before pushing.
 4. If any path isn't ready for behavior review, mark the PR as draft — don't burn reviewer time.
 
+## Plan
+Before pinging a reviewer:
+1. Run linters / formatters / full test suite yourself; resolve everything.
+2. Predict the reviewer's first 3 questions; pre-empt each in the description.
+3. Confirm one PR per concern; split if not.
+4. Stop and self-review the diff one more pass before requesting review.
+Definition of done: clean self-review + answered-in-advance description + one PR per concern.
+Rollback if: the reviewer asks something obvious — the description failed; rewrite it before resuming review.
+
 1. Self-review first. Run the diff through your own eyes and the linters before paging anyone.
 2. Write the description so the reviewer can pick it up cold: what + why + how to verify.
 3. Pre-empt the obvious questions in the description ("I considered X but chose Y because…").

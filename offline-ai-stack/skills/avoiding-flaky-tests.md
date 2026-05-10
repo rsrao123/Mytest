@@ -13,6 +13,14 @@ For each test under suspicion, walk through:
 3. Locate shared mutable state and any prior-test mutation paths.
 4. Conclude with a fixture/seeding/freezing plan that makes the test 100/100 reliable.
 
+## Plan
+Before merging the test:
+1. Apply the fixture/freezing strategy from Reasoning step 4.
+2. Run the test 100× locally (or in a CI matrix); confirm 100% pass.
+3. Stop and re-read the diff for residual sleeps > 100ms, unseeded randomness, or shared module state.
+4. Definition of done: 100/100 passes locally + zero unseeded RNG + zero `time.sleep > 100ms`.
+Rollback if: any single flake post-merge — quarantine within 24h and reopen the trace.
+
 A flaky test is worse than no test — it trains the team to ignore failures.
 
 Sources of flakiness, in order of frequency:

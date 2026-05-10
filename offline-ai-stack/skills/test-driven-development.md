@@ -13,6 +13,15 @@ For each behavior change, follow the cycle:
 3. Run the full suite to catch regressions; confirm green.
 4. Refactor under the test net; commit at green.
 
+## Plan
+For each behavior change:
+1. Write the failing test; run it; confirm it fails for the *right* reason.
+2. Write the minimum production code to pass; run; confirm green.
+3. Stop and run the *full* suite; confirm no regressions.
+4. Refactor under the green test; commit at green.
+Definition of done: red → green → full-suite-green → refactor-green → commit, in order.
+Rollback if: full suite goes red after step 2 — revert your change; the test alone didn't catch a regression.
+
 1. Write the failing test first; do not write implementation code yet.
 2. Run the test and confirm it fails for the expected reason (not import error).
 3. Write the minimum code to make it pass.

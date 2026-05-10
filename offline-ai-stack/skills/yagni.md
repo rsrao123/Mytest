@@ -13,6 +13,15 @@ Before adding any abstraction / option / flag, work through:
 3. Compare cost of adding the abstraction now vs adding it when the third real caller appears.
 4. Conclude: ship the simple form; defer abstraction with a note explaining when it would unlock.
 
+## Plan
+Before adding any abstraction / option / flag:
+1. Name the *current* real caller; if there isn't one, stop and delete instead.
+2. Count occurrences of the pattern; if < 3, inline rather than extract.
+3. Stop and weigh: cost-of-adding-now vs cost-of-adding-when-third-real-caller-appears.
+4. Default: ship the simple form; leave a deferred-extraction note explaining when it would unlock.
+Definition of done: simple form shipped + deferred-extraction note present (if applicable).
+Rollback if: an abstraction got added without a current real caller — inline immediately and file the lesson.
+
 1. Build for the requirement in front of you. Not the one you're imagining for next quarter.
 2. Three similar lines beat a premature abstraction. Wait for the fourth before extracting.
 3. No options, flags, or knobs without a current caller that needs them.

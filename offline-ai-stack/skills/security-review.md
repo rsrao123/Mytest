@@ -13,6 +13,15 @@ For each finding, work through:
 3. Assess severity: CRITICAL / HIGH / MEDIUM / LOW — based on exploitability AND blast radius.
 4. Propose the smallest fix that closes the path; mark blocker vs ship-with-followup explicitly.
 
+## Plan
+For each finding:
+1. Trace input-to-sink end-to-end; classify under one of the 10 vulnerability classes below.
+2. Assess severity + blast radius; pick CRITICAL / HIGH / MEDIUM / LOW.
+3. Stop and decide: is this a merge blocker, or ship-with-followup?
+4. Propose the smallest fix; file follow-up tickets if needed; record evidence (file:line + reproducer).
+Definition of done: severity + class + smallest fix + triage decision recorded per finding.
+Rollback if: the "smallest fix" hides the issue without closing it — escalate; pick a structural fix.
+
 Audit the code for these specific vulnerability classes. For each finding, report:
 SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 

@@ -13,6 +13,15 @@ For each branch, work through:
 3. Verify each commit compiles and passes tests in isolation; chain must be `git bisect`-able.
 4. Plan the flag-off + flip sequence for risky behavior changes; ship the off path first.
 
+## Plan
+Before pushing the branch:
+1. Estimate net diff size; if > 200 lines, list concrete split points and split.
+2. Sequence: structural commits first (rename/extract/move), then behavior commits.
+3. Stop after each commit; verify build + tests green in isolation before continuing.
+4. For risky behavior, ship the flag-off path first; flip in a follow-up PR.
+Definition of done: every commit compiles + tests green + total diff < 200 lines net.
+Rollback if: a commit breaks `git bisect` — revert it before continuing the chain.
+
 1. Aim for small, reviewable diffs (≤ ~200 lines net). Bigger diffs hide mistakes and stall reviews.
 2. Land structural changes first (renames, extracts, moves), then behavior changes — never bundle them.
 3. Each commit must compile and pass tests. The chain should be `git bisect`-able.

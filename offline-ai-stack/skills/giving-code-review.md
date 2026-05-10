@@ -13,6 +13,15 @@ For each PR review, work through:
 3. Verify each comment targets *the change*, not pre-existing code that the diff merely touches.
 4. State a single verdict — APPROVE / REQUEST_CHANGES / BLOCK — with the top blocker named.
 
+## Plan
+Before posting:
+1. Read the diff once end-to-end without commenting.
+2. Note one concrete thing the author did well; lead with it.
+3. Tag each pending comment as BLOCKER / nit / question; cut anything not about *this change*.
+4. Stop and post a single APPROVE / REQUEST_CHANGES / BLOCK verdict + the top blocker.
+Definition of done: verdict + tagged comments + lead-with-good present.
+Rollback if: review takes > 30 minutes — the diff is too big; ask for a split rather than continuing.
+
 1. Lead with what's good. Reviewers who only flag faults get tuned out.
 2. Distinguish blocking from non-blocking comments explicitly: prefix with `nit:`, `q:`, or `BLOCKER:`.
 3. Suggest, don't dictate. "Consider X because Y" beats "do X".

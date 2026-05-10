@@ -13,6 +13,14 @@ Before writing a mock, work through:
 3. If a fake will replace it, write the behavioral contract the fake must honor.
 4. Conclude with one of: real / fake / boundary-mock — and a one-line justification recorded in the test.
 
+## Plan
+Before writing the test:
+1. Try the real component first; if it passes in CI in under 5s, ship.
+2. If real isn't viable, write a minimal fake honoring the documented contract.
+3. Stop and check: is the fake at a system boundary (acceptable) or replacing internal code (refactor design instead)?
+4. Definition of done: zero `mock.patch` on code we own; fakes have inline justification.
+Rollback if: the fake's contract diverges from the real dep — fix the contract, don't paper over it.
+
 Default: don't mock. Mocks couple tests to implementation and rot fast.
 
 1. **Real things first.** Use the real DB (sqlite/test container), real filesystem (tmpdir), real clock when ±1s is fine.

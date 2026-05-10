@@ -13,6 +13,14 @@ Before each commit, work through:
 3. Confirm exactly one chunk type is present; isolate the rest into separate commits.
 4. Draft the conventional-commits subject line: `type(scope): subject` (imperative, ≤ 72 chars).
 
+## Plan
+Before each commit:
+1. Review the staged diff; tag chunks (feature / fix / refactor / docs / test).
+2. If multiple tags appear, unstage and split into separate commits.
+3. Stop and run pre-commit hooks (linters, formatters, tests); resolve all failures.
+4. Definition of done: one tag per commit + green hooks + conventional subject line.
+Rollback if: a hook fails — fix and create a NEW commit. Never `--amend` already-pushed commits.
+
 1. Atomic commits: one logical change per commit. If you'd describe it with "and", split it.
 2. Conventional Commits format: `type(scope): subject` where type ∈ {feat, fix, refactor, perf, test, docs, chore, build, ci}.
 3. Subject in imperative mood, ≤72 chars, no trailing period.

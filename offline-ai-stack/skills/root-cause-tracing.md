@@ -13,6 +13,15 @@ For each bug, dig down with this loop:
 3. Predict at least one *other* symptom the same root cause would produce; search the codebase for it.
 4. Fix the root cause + add a regression test that pins it; file follow-ups for any structural issues.
 
+## Plan
+For each bug:
+1. Reproduce deterministically with the smallest possible input. If you can't reproduce it, you don't understand it.
+2. Drill ≥ 3 levels of "why" past the first plausible answer.
+3. Stop and search for other symptoms the same root cause would produce.
+4. Fix the root cause + add the regression test that pins it; file structural follow-ups separately.
+Definition of done: cause named + ≥ 3 "why" levels documented + regression test landed.
+Rollback if: another instance of the same cause appears post-fix — the fix was at the wrong layer; redo the trace.
+
 1. Don't fix at the first plausible layer. Ask "why" until the answer stops surprising you (≥3 levels deep).
 2. Reproduce the bug with the smallest possible input. If you can't reproduce, you don't understand it.
 3. Stack traces lie about *cause* but tell the truth about *location*. Use them to bisect, not to diagnose.

@@ -13,6 +13,15 @@ For each prompt you author, work through:
 3. Lock the output schema: keys, structure, max length, examples.
 4. Separate hard constraints (must) from preferences (nice-to-have); list each under its own header.
 
+## Plan
+Before shipping any prompt:
+1. Write the task in one sentence; refuse to continue if you can't.
+2. Add ≥ 1 positive + 1 negative example of expected output.
+3. Lock the output schema; specify keys, structure, max length.
+4. Stop and run the prompt against the eval set before merging; compare to the prior baseline.
+Definition of done: eval pass-rate ≥ baseline + schema validated against examples.
+Rollback if: eval regresses on the existing test set — revert the prompt change; do not ship.
+
 1. State the task in one sentence at the top.
 2. Provide 1–3 positive examples and 1 negative example (what NOT to produce).
 3. Specify the output schema explicitly (JSON keys, markdown structure, max length).

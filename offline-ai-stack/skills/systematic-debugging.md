@@ -13,6 +13,15 @@ Run this loop until the bug is fixed:
 3. Run the experiment; if falsified, revise the hypothesis (do not speculate further without a test).
 4. Loop until the bug is reproduced deterministically; then fix the cause and add a regression test.
 
+## Plan
+Loop until reproduced and fixed:
+1. State expected/observed behavior precisely.
+2. Hypothesize + define the cheapest falsifying experiment.
+3. Stop and run the experiment; record outcome in the bug's notes.
+4. If falsified, revise the hypothesis; if confirmed, fix the cause and add a regression test.
+Definition of done: deterministic reproduction + fix + regression test landed.
+Rollback if: 3 hypotheses fail in a row — re-read the relevant code; speculation isn't working.
+
 1. State the expected behavior precisely.
 2. State the observed behavior precisely.
 3. Form a hypothesis. Predict what would prove it wrong.
