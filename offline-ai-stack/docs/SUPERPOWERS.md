@@ -509,6 +509,34 @@ working**, and **canonical companions** (skills that compose well).
 
 ### 3.6 Operations
 
+#### `qa-validation`
+- **Purpose:** structured release-readiness audit. Inventory blocking vs informational checks; record `command + exit_code` per check; produce a single PASS / FAIL verdict.
+- **Load when:** QA agents and release managers; any agent gating a merge or release.
+- **Inverse:** implementer roles in mid-iteration; the audit is a release-time concern.
+- **Working signal:** verdict matches the conjunction of recorded blocking-check exit codes; flake quarantine list maintained.
+- **Companions:** `release-shipping`, `writing-tests`, `avoiding-flaky-tests`.
+
+#### `release-shipping`
+- **Purpose:** decisive go / no-go on shipping. Readiness checklist (git / tests / security / docs / version / changelog / risks / rollback / approval) with evidence per item.
+- **Load when:** release manager / release lead.
+- **Inverse:** any agent that doesn't gate releases; load `qa-validation` instead for the merge gate.
+- **Working signal:** SHIP only after every blocking item has evidence AND rollback rehearsed AND approval recorded.
+- **Companions:** `qa-validation`, `incident-response`, `explaining-changes`.
+
+#### `documentation-writing`
+- **Purpose:** match doc to audience, one canonical file per concept, every command verified before merge, CHANGELOG kept current.
+- **Load when:** doc writer; any agent producing user-facing documentation.
+- **Inverse:** code-only PRs with no public-API surface change.
+- **Working signal:** every fenced command runs as written; no duplicate prose for the same concept across files.
+- **Companions:** `explaining-changes`, `architecture-decision-record`.
+
+#### `memory-management`
+- **Purpose:** discipline for writing to project memory (PROJECT_MEMORY / ARCHITECTURE / DECISIONS / CODING_RULES / SECURITY_NOTES / BUG_HISTORY / SESSION_SUMMARY). Classify before writing; never persist secrets; supersede explicitly.
+- **Load when:** any agent that writes to project memory (especially the Claude-MEM equivalent in `scripts/claude_mem_local.py`).
+- **Inverse:** read-only sessions where nothing durable was learned.
+- **Working signal:** secrets-scan green on every memory write; per-fact dedupe; supersession dates present.
+- **Companions:** `handling-uncertainty`, `documentation-writing`.
+
 #### `incident-response`
 - **Purpose:** stabilize first, diagnose second; blameless postmortem
   with action items.
@@ -638,24 +666,24 @@ with_defaults(perf_reviewer,
               "pr-review", "code-search", "root-cause-tracing")
 
 with_defaults(qa_engineer,
-              "writing-tests", "avoiding-mocks", "avoiding-flaky-tests")
+              "writing-tests", "avoiding-flaky-tests", "qa-validation")
 
 # ---- Process roles ---------------------------------------------------
 with_defaults(release_manager,
-              "incident-response", "explaining-changes",
-              "handling-failures-and-retries")
+              "incident-response", "explaining-changes", "release-shipping")
 
 with_defaults(doc_writer,
-              "explaining-changes", "architecture-decision-record")
+              "documentation-writing", "explaining-changes",
+              "architecture-decision-record")
 
 # ---- Exec review (Stack-equivalent) ----------------------------------
 with_defaults(ceo,         "yagni", "brainstorming")
 with_defaults(eng_lead,    "architecture-decision-record", "yagni",
                            "making-changes-incrementally")
 with_defaults(design_lead, "frontend-design")
-with_defaults(qa_lead,     "writing-tests", "avoiding-flaky-tests",
-                           "incident-response")
-with_defaults(release_mgr, "incident-response", "handling-failures-and-retries",
+with_defaults(qa_lead,     "qa-validation", "avoiding-flaky-tests",
+                           "writing-tests")
+with_defaults(release_mgr, "release-shipping", "incident-response",
                            "explaining-changes")
 ```
 
@@ -1037,6 +1065,7 @@ skills/
 ├── defensive-programming-discipline.md implementation
 ├── dependency-hygiene.md               operations
 ├── dispatching-parallel-agents.md      multi-agent
+├── documentation-writing.md            operations
 ├── executing-plans.md                  planning
 ├── explaining-changes.md               collaboration
 ├── frontend-design.md                  frontend
@@ -1045,10 +1074,13 @@ skills/
 ├── handling-uncertainty.md             debugging
 ├── incident-response.md                operations
 ├── making-changes-incrementally.md     implementation
+├── memory-management.md                operations
 ├── pr-review.md                        collaboration
 ├── prompt-engineering.md               multi-agent
+├── qa-validation.md                    operations
 ├── reading-code.md                     code-understanding
 ├── refactoring.md                      code-understanding
+├── release-shipping.md                 operations
 ├── requesting-code-review.md           collaboration
 ├── root-cause-tracing.md               debugging
 ├── security-review.md                  operations
@@ -1062,4 +1094,4 @@ skills/
 └── yagni.md                            implementation
 ```
 
-32 skills, eight themes, one loader, no network.
+36 skills, eight themes, one loader, no network.

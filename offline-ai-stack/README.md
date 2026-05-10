@@ -17,7 +17,7 @@ offline-ai-stack/
 ├── logs/        # vLLM, agents (runtime)
 ├── backups/     # restic snapshots (runtime)
 ├── crews/       # CrewAI / LangGraph definitions
-├── skills/      # 32 markdown skill prompts + loader.py (offline Superpowers)
+├── skills/      # 36 markdown skill prompts + loader.py (offline Superpowers)
 └── hf-cache/    # HF model cache (runtime; HF_HOME)
 ```
 
@@ -87,7 +87,7 @@ backend_dev = inject(backend_dev,
 | Debugging | `systematic-debugging`, `root-cause-tracing`, `handling-uncertainty`, `handling-failures-and-retries` |
 | Code understanding | `reading-code`, `code-search`, `working-with-legacy-code`, `refactoring` |
 | Collaboration | `pr-review`, `giving-code-review`, `requesting-code-review`, `explaining-changes`, `commit-discipline` |
-| Operations | `incident-response`, `dependency-hygiene`, `security-review` |
+| Operations | `incident-response`, `dependency-hygiene`, `security-review`, `qa-validation`, `release-shipping`, `documentation-writing`, `memory-management` |
 | Multi-agent | `subagent-driven-development`, `dispatching-parallel-agents`, `using-skills-effectively`, `prompt-engineering` |
 | Frontend | `frontend-design` |
 

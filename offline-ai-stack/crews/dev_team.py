@@ -140,7 +140,7 @@ qa_engineer = with_defaults(
         tools=[dir_tool, file_tool],
         allow_delegation=False,
     ),
-    "writing-tests", "avoiding-mocks", "avoiding-flaky-tests",
+    "writing-tests", "avoiding-flaky-tests", "qa-validation",
 )
 
 release_manager = with_defaults(
@@ -153,7 +153,7 @@ release_manager = with_defaults(
         allow_delegation=False,
     ),
     # writing-plans is in the planning baseline.
-    "incident-response", "explaining-changes", "handling-failures-and-retries",
+    "incident-response", "explaining-changes", "release-shipping",
 )
 
 doc_writer = with_defaults(
@@ -166,7 +166,7 @@ doc_writer = with_defaults(
         allow_delegation=False,
     ),
     # reading-code is in the reasoning baseline; writing-plans is in the planning baseline.
-    "explaining-changes", "architecture-decision-record",
+    "documentation-writing", "explaining-changes", "architecture-decision-record",
 )
 
 

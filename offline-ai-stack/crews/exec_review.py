@@ -64,7 +64,7 @@ qa_lead = with_defaults(
         backstory="Has seen which 'small changes' took prod down. Asks for a kill-switch on every launch.",
         llm=reasoner, allow_delegation=False,
     ),
-    "writing-tests", "avoiding-flaky-tests", "incident-response",
+    "qa-validation", "avoiding-flaky-tests", "writing-tests",
 )
 
 release_mgr = with_defaults(
@@ -74,7 +74,7 @@ release_mgr = with_defaults(
         backstory="Friday-deploy survivor. Won't ship without monitors and a documented rollback.",
         llm=reasoner, allow_delegation=False,
     ),
-    "incident-response", "handling-failures-and-retries", "explaining-changes",
+    "release-shipping", "incident-response", "explaining-changes",
 )
 
 ROLES = {
