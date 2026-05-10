@@ -1,0 +1,153 @@
+# Single-file consolidation of every dockerized service in the stack.
+# vLLM is NOT here — it runs natively under systemd (see configs/vllm-*.service).
+#
+# Strict-offline operation:
+#   - Every service has `pull_policy: never` so `docker compose up` never
+#     reaches dockerhub/ghcr/etc. Pre-pull images during offline-prep.
+#   - Every service that ships default-on telemetry is opted out via env vars
+#     (ChromaDB → PostHog, Grafana → usage stats, Forgejo → update check,
+#     Open WebUI → Scarf analytics).
+#
+# Usage:
+#   export FORGEJO_OAUTH_CLIENT=...     # from Forgejo Settings > Applications
+#   export FORGEJO_OAUTH_SECRET=...
+#   export WOODPECKER_AGENT_SECRET=$(openssl rand -hex 32)
+#   docker compose up -d
+
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    pull_policy: never
+    container_name: chroma
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8002:8000"
+    environment:
+      # ChromaDB ships with anonymous telemetry to PostHog enabled by default.
+      ANONYMIZED_TELEMETRY: "false"
+      ALLOW_RESET: "false"
+    volumes:
+      - ${HOME}/offline-ai-stack/memory:/chroma/chroma
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    pull_policy: never
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      OPENAI_API_BASE_URL: http://host.docker.internal:8000/v1
+      OPENAI_API_KEY: local
+      # ENABLE_RAG_LOCAL_WEB_FETCH intentionally NOT set — would make external HTTP calls.
+      ENABLE_OPENAI_API: "true"
+      WEBUI_AUTH: "false"
+      # Telemetry opt-outs: Scarf is the analytics layer baked into the image.
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "1"
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - open-webui:/app/backend/data
+
+  # SearXNG removed: it's a metasearch *proxy* that queries Google/Bing/DDG —
+  # incompatible with strict-offline. Re-add it only if you accept the
+  # external queries as a deliberate exception.
+
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:9
+    pull_policy: never
+    container_name: forgejo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3000"
+      - "127.0.0.1:222:22"
+    environment:
+      # Forgejo "Check for updates" on the admin dashboard hits the upstream.
+      FORGEJO__server__OFFLINE_MODE: "true"
+      FORGEJO__server__DISABLE_SSH: "false"
+    volumes:
+      - ${HOME}/offline-ai-stack/forgejo:/data
+
+  woodpecker-server:
+    image: woodpeckerci/woodpecker-server:latest
+    pull_policy: never
+    container_name: woodpecker-server
+    restart: unless-stopped
+    depends_on: [forgejo]
+    ports:
+      - "127.0.0.1:8003:8000"
+      - "127.0.0.1:9000:9000"
+    environment:
+      WOODPECKER_OPEN: "true"
+      WOODPECKER_HOST: http://localhost:8003
+      WOODPECKER_GITEA: "true"
+      WOODPECKER_GITEA_URL: http://forgejo:3000
+      WOODPECKER_GITEA_CLIENT: ${FORGEJO_OAUTH_CLIENT}
+      WOODPECKER_GITEA_SECRET: ${FORGEJO_OAUTH_SECRET}
+      WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
+    volumes:
+      - woodpecker-server-data:/var/lib/woodpecker
+
+  woodpecker-agent:
+    image: woodpeckerci/woodpecker-agent:latest
+    pull_policy: never
+    container_name: woodpecker-agent
+    restart: unless-stopped
+    depends_on: [woodpecker-server]
+    environment:
+      WOODPECKER_SERVER: woodpecker-server:9000
+      WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:latest
+    pull_policy: never
+    container_name: dcgm-exporter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9400:9400"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  prometheus:
+    image: prom/prometheus
+    pull_policy: never
+    container_name: prometheus
+    restart: unless-stopped
+    depends_on: [dcgm-exporter]
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./configs/prom.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    pull_policy: never
+    container_name: grafana
+    restart: unless-stopped
+    depends_on: [prometheus]
+    ports:
+      - "127.0.0.1:3003:3000"
+    environment:
+      # Grafana defaults: usage stats + update checks. All off.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_ANALYTICS_FEEDBACK_LINKS_ENABLED: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  open-webui:
+  woodpecker-server-data:
+  prometheus-data:
+  grafana-data:

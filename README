@@ -1,1 +1,5 @@
 This is a git repo
+
+See OFFLINE_AI_STACK.md for the full design doc and offline-ai-stack/ for
+the materialized scaffolding (skills, crews, scripts, configs, Makefile,
+docker-compose.yml, systemd units, eval/CI configs).
