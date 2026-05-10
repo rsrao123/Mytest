@@ -58,14 +58,36 @@ These are NOT in `/etc/environment` because they'd break a future
 `huggingface-cli download`. They live on the systemd unit so vLLM never
 phones home at boot.
 
+### HuggingFace lockdown
+
+Models are stored as plain local directories under
+`~/offline-ai-stack/models/<name>/`, not in the HF cache. vLLM serves the
+local path with `--served-model-name <repo-id>` so client code can still
+reference the familiar repo-ID alias without any HF Hub lookup happening.
+Embedding code (`scripts/ingest.py`) loads from a local path. No runtime
+Python file imports `huggingface_hub`.
+
+The `transformers` library is still a hard dependency of vLLM (used
+internally for tokenizer + model loading). When given a local path with
+`HF_HUB_OFFLINE=1` set, it never reaches for the Hub. To remove
+`transformers` entirely you would have to swap vLLM for llama.cpp / GGUF
+or an equivalent non-HF engine.
+
+`scripts/hf-audit.sh` (also `make hf-audit`) verifies:
+- every model directory listed in `offline-prep.sh` exists locally with a `config.json`
+- no runtime Python code references HF repo IDs *except* as vLLM service-name aliases
+- no runtime Python file imports `huggingface_hub`
+
 ### Verification
 
 After `make offline-prep` and `make bring-up`, run:
 ```bash
-make offline-doctor          # passive 30s probe; reports any non-loopback ESTAB sockets
-make offline-doctor-strict   # 30s probe with iptables blocking egress (sudo)
+make hf-audit                # structural: every model present, no repo-ID surprises
+make offline-doctor          # observed: passive 30s probe of network egress
+make offline-doctor-strict   # adversarial: iptables blocks egress during probe (sudo)
 ```
 
+`hf-audit` catches "what could leak". `offline-doctor` catches "what did leak".
 The strict mode is the only real proof — it actively refuses any non-loopback
 connection during the probe window and reports any process that tried.
 

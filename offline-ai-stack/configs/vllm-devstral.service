@@ -13,7 +13,8 @@ Environment=HF_HUB_DISABLE_IMPLICIT_TOKEN=1
 Environment=DO_NOT_TRACK=1
 Environment=VLLM_NO_USAGE_STATS=1
 Environment=VLLM_DO_NOT_TRACK=1
-ExecStart=/home/cemilac/ai-stack/bin/vllm serve mistralai/Devstral-Small-2-24B-Instruct-2512 \
+ExecStart=/home/cemilac/ai-stack/bin/vllm serve /home/cemilac/offline-ai-stack/models/devstral-small-2 \
+  --served-model-name mistralai/Devstral-Small-2-24B-Instruct-2512 \
   --host 0.0.0.0 --port 8001 --max-model-len 131072 \
   --gpu-memory-utilization 0.28 --enable-auto-tool-choice \
   --tool-call-parser mistral
