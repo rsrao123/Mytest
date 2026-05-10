@@ -1,4 +1,11 @@
 # Skill: Making Changes Incrementally
+
+## Think first
+- Is this diff under ~200 net lines? If not, where can I split it without breaking the build?
+- Are structural changes (rename, extract, move) mixed in with behavior changes? They want to be sequenced, not bundled.
+- Will every commit on this branch compile and pass tests in isolation? Is the chain `git bisect`-able?
+- Is there a feature-flag-off path I should ship first, then flip in a follow-up?
+
 1. Aim for small, reviewable diffs (≤ ~200 lines net). Bigger diffs hide mistakes and stall reviews.
 2. Land structural changes first (renames, extracts, moves), then behavior changes — never bundle them.
 3. Each commit must compile and pass tests. The chain should be `git bisect`-able.

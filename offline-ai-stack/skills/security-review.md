@@ -1,5 +1,11 @@
 # Skill: Security Review
 
+## Think first
+- Where does untrusted input enter this code, and which sinks does it eventually reach?
+- For each finding, which of the 10 vulnerability classes (injection / deserialization / authz / SSRF / etc.) is it?
+- Is this a blocker for merge, or ship-with-followup? Decide *before* writing the finding.
+- What's the smallest fix that closes the path without driving the vulnerability into hiding?
+
 Audit the code for these specific vulnerability classes. For each finding, report:
 SEVERITY (CRITICAL / HIGH / MEDIUM / LOW), FILE:LINE, EXPLOIT, FIX.
 

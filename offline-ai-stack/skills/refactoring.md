@@ -1,4 +1,11 @@
 # Skill: Refactoring
+
+## Think first
+- Is this commit purely behavior-preserving? If not, it's two commits.
+- Did I run the full test suite *before* I started, and is it green right now?
+- Am I tempted to "fix" something the task doesn't require? Note it as follow-up; don't expand scope.
+- Is there a prematurely-extracted helper here that I could *inline* rather than refactor further?
+
 Tidy First. Behavior-preserving changes only.
 
 1. Separate refactor commits from feature commits. Never mix.

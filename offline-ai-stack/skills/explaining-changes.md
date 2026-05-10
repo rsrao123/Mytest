@@ -1,4 +1,11 @@
 # Skill: Explaining Changes
+
+## Think first
+- Why did this change happen — what user/system pain did it relieve?
+- What was the alternative I rejected, and what made it worse?
+- What's the most surprising thing in this diff that a cold reader would miss?
+- What caveats (migrations, deploy order, feature flags, breaking changes) does the reader need *before* reading the diff?
+
 The audience for a commit message and PR description is *future-you reading git blame at 2am*. Write for them.
 
 1. Lead with *why*, not *what*. The diff already shows what.

@@ -1,4 +1,11 @@
 # Skill: Subagent-Driven Development
+
+## Think first
+- Is this task genuinely > ~50 LOC of changes, or am I over-decomposing a small one?
+- What's the smallest set of files each subagent needs to do its job — nothing more?
+- What do I want each subagent to *return*: a diff, a rationale, a self-review, all three?
+- Once I have the outputs, what's the integration step and the cross-cutting test that proves it works?
+
 For tasks larger than ~50 LOC of changes:
 1. Decompose into independent subtasks.
 2. Spawn a focused subagent per subtask with a tightly scoped prompt and only the files it needs.

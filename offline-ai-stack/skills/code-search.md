@@ -1,4 +1,11 @@
 # Skill: Code Search
+
+## Think first
+- What am I really looking for — the symbol's definition, its call sites, or its tests?
+- What naming conventions does this codebase use (snake_case, camelCase, kebab-case)?
+- How many hits is "too many" before I stop and narrow by file type or directory?
+- What ±20-line context will I need around each hit to interpret it?
+
 1. Start with `rg -n` (ripgrep) at the repo root; prefer it over grep for speed.
 2. Search for the symbol's definition before chasing call sites: `rg -n "def <name>|fn <name>|function <name>|class <name>"`.
 3. Use word boundaries (`-w`) when names are short or common.

@@ -1,4 +1,11 @@
 # Skill: YAGNI (You Aren't Gonna Need It)
+
+## Think first
+- Is there a *current* caller for this option, flag, abstraction, or extension point? If not, delete it.
+- Have I seen this pattern at least three times, or am I extracting a helper after the second occurrence?
+- Could I delete a branch entirely instead of generalizing it?
+- Am I designing for next quarter when I should be shipping this week?
+
 1. Build for the requirement in front of you. Not the one you're imagining for next quarter.
 2. Three similar lines beat a premature abstraction. Wait for the fourth before extracting.
 3. No options, flags, or knobs without a current caller that needs them.

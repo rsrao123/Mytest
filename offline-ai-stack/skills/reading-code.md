@@ -1,4 +1,11 @@
 # Skill: Reading Code
+
+## Think first
+- Have I read the test file before the implementation? Tests are the contract.
+- Which kind of code is this — orchestration, domain logic, IO, glue — and how should I read each?
+- What style does this file commit to (naming, error-handling, layering), and how should new code match it?
+- Can I narrate this function as inputs → invariants → outputs, on paper, before changing it?
+
 Before you change code, understand it.
 
 1. Read the test file first. Tests document the contract better than docstrings.

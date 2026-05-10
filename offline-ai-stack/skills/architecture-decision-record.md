@@ -1,4 +1,11 @@
 # Skill: Architecture Decision Record (ADR)
+
+## Think first
+- What's the actual problem this decision is responding to — not the symptom?
+- Which constraints (technical, organizational, time) are non-negotiable, and which are preferences?
+- What would I regret in 6 months if I pick wrong, and which option minimizes that regret?
+- Is this decision reversible, and at what cost?
+
 Use this template for every non-trivial architectural choice. File it under `docs/adr/NNNN-title.md`.
 
 ```

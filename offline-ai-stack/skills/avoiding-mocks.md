@@ -1,4 +1,11 @@
 # Skill: Avoiding Mocks
+
+## Think first
+- What real component am I about to mock — and why exactly can't I use it directly here?
+- Is this dep at the system boundary (acceptable target) or in the middle of code I own (smell)?
+- If I write a fake instead of a mock, what behavioral contract must it honor?
+- What's the cost when the real dep changes shape — does my mock catch it or hide it?
+
 Default: don't mock. Mocks couple tests to implementation and rot fast.
 
 1. **Real things first.** Use the real DB (sqlite/test container), real filesystem (tmpdir), real clock when ±1s is fine.

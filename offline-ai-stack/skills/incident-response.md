@@ -1,4 +1,11 @@
 # Skill: Incident Response
+
+## Think first
+- Is user pain still active right now? If yes, stabilize before anything else.
+- Where's the source-of-truth doc/channel, and have I started a timestamped timeline?
+- Am I forming hypotheses, or am I just pattern-matching on past incidents?
+- What's my rollback plan if my fix makes the incident worse?
+
 Stabilize → Diagnose → Fix → Postmortem.
 
 1. **Stabilize first.** Roll back, disable the feature flag, or scale up — whatever stops user pain. Diagnosis comes after.

@@ -1,5 +1,11 @@
 # Skill: Frontend Design
 
+## Think first
+- Which aesthetic profile applies (LUXURY / REFINED / BRUTALIST / EDITORIAL)? Pick one and commit.
+- Which 3-4 shadcn primitives compose this layout? List them before opening any file.
+- Am I about to introduce any of the listed anti-patterns (purple gradient, glassmorphism, emoji-as-icon)?
+- How does this design hold at 375 / 768 / 1280 px — and which empty / loading / error states have I forgotten?
+
 ## Anti-patterns (never produce these by default)
 - Purple/blue gradient hero sections
 - Glassmorphism (backdrop-blur on every card)

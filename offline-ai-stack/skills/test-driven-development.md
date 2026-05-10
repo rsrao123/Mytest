@@ -1,4 +1,11 @@
 # Skill: TDD
+
+## Think first
+- Have I written the failing test *before* any production-code change?
+- Is the test failing for the *right* reason — not an import error or typo?
+- What's the *minimum* implementation that turns this test green?
+- Has the full suite stayed green after my refactor step?
+
 1. Write the failing test first; do not write implementation code yet.
 2. Run the test and confirm it fails for the expected reason (not import error).
 3. Write the minimum code to make it pass.

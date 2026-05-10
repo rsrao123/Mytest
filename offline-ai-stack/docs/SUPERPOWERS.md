@@ -19,10 +19,14 @@ deliberately terse and prescriptive; the *why* and the *how* live here.
   and the agent's outputs measurably shift on a fixed eval set.
 - **Self-contained** — each skill is one file, one concern, no cross-imports.
 - **Local-only** — no network calls, no SaaS plugin registry, no auth.
-- **Reviewable** — skills are markdown, ≤ ~30 lines each. A human can read
+- **Reviewable** — skills are markdown, ≤ ~40 lines each. A human can read
   the whole library in 30 minutes.
 - **Versioned with the codebase** — skills live in git, ship with the repo,
   and roll back atomically.
+- **Deliberate, not reflexive** — every skill leads with a `## Think first`
+  block that forces the agent to surface assumptions and choose before
+  reaching for the imperative rules. Pattern-matching is the failure mode
+  these skills exist to prevent.
 
 ### Non-goals
 - Replacing fine-tuning. Skills bias behavior; they don't change capability.
@@ -66,6 +70,33 @@ The loader is intentionally trivial (`offline-ai-stack/skills/loader.py`):
 
 That's it. No registries, no plugin manager, no lifecycle hooks. The
 filesystem *is* the registry.
+
+### 2.0 Anatomy of a skill file
+
+Every skill file has two sections in a fixed order:
+
+```
+# Skill: <Name>
+
+## Think first
+- <reflective question>
+- <reflective question>
+- <reflective question>
+
+1. <imperative rule>
+2. <imperative rule>
+…
+```
+
+The thinking layer is *required* — it's enforced by
+`tests/test_skills_loader.py::test_each_skill_has_think_first_section`,
+which fails CI if a skill ships fewer than three domain-specific
+prompts. Rationale: the rule layer is easy to pattern-match without
+deliberation, especially under time pressure. The thinking layer
+forces the agent to surface what it's assuming and what it's choosing
+*before* it reaches for the rules. Empirically (see
+`promptfooconfig.yaml` baselines), this improves rule adherence on
+ambiguous cases more than longer rule lists do.
 
 ### 2.1 Why backstory injection, not system-prompt injection?
 
@@ -533,27 +564,49 @@ inject(release_mgr, "incident-response", "handling-failures-and-retries",
 
 ```markdown
 # Skill: <Name>
+
+## Think first
+- <Domain-specific question that surfaces an assumption.>
+- <Domain-specific question that forces a tradeoff to be named.>
+- <Domain-specific question that tests for a common failure mode.>
+- <Optional fourth question.>
+
 1. <Imperative sentence>.
 2. <Imperative sentence>.
 3. <Imperative sentence>.
 …
 ```
 
+The two halves do different jobs:
+
+- **`## Think first`** — 3-4 reflective questions in the agent's voice,
+  specific to *this* skill's domain. Their job is to make the agent
+  deliberate before acting: surface an assumption, name a tradeoff, or
+  catch a common failure mode. Generic prompts ("think carefully") are
+  rejected — questions must be checkable against the agent's eventual
+  output.
+- **Numbered rules** — imperative, action-first, one sentence each.
+  This is the *do* layer that the thinking layer feeds into.
+
 Constraints:
-- ≤ 30 lines, ≤ 10 imperative steps.
-- One sentence per step, present tense, action-first.
+- ≤ 40 lines total (Think first + rules).
+- 3–4 thinking questions, ≤ 10 imperative steps.
+- One sentence per item, present tense, action-first for rules; question
+  form for the thinking layer.
 - No anecdotes, no rationale paragraphs. Anecdotes go here in
   `SUPERPOWERS.md`.
 - File name is kebab-case and matches the heading.
-- Skill must be checkable: a reviewer can audit one finding at a time
-  against the skill's steps.
+- Skill must be checkable: a reviewer can audit one output at a time
+  against both the thinking prompts and the rules.
 
 ### 5.2 Submission checklist
 
 - [ ] File created at `skills/<kebab-name>.md`.
 - [ ] Heading matches `# Skill: <Title Case>`.
+- [ ] `## Think first` section present with ≥ 3 domain-specific questions.
+- [ ] Numbered rules section present.
 - [ ] Added to `tests/test_skills_loader.py::REQUIRED_SKILLS`.
-- [ ] `pytest tests/` passes.
+- [ ] `pytest tests/` passes (file exists, heading correct, ≥ 3 think-first prompts).
 - [ ] Catalog entry added to §3 here, including triggers, inverse,
   working signal, companions.
 - [ ] If the skill changes implementer behavior, add at least one new
@@ -570,6 +623,14 @@ Constraints:
   a skill.
 - **Duplicate concerns.** If `yagni` already says it, don't write
   `dont-overengineer`.
+- **Generic thinking prompts.** "Think carefully" or "Consider all
+  options" in the `## Think first` section. The questions must be
+  domain-specific and checkable against the agent's output — generic
+  prompts add tokens and remove no errors.
+- **Thinking-layer overlap with rules.** If a `## Think first` question
+  has a 1:1 mapping with a numbered rule, drop one. The two layers
+  should ask the agent to deliberate and then act, not say the same
+  thing twice.
 
 ---
 

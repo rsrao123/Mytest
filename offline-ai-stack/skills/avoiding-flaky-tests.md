@@ -1,4 +1,11 @@
 # Skill: Avoiding Flaky Tests
+
+## Think first
+- What sources of nondeterminism does this code touch (time, randomness, threads, network, FS, ordering)?
+- Which of those are inputs I can control, and which are outputs I have to assert against?
+- Where does shared mutable state live, and could a previous test have left it in an unexpected state?
+- What would I have to change to make this test fail reliably 100/100 times?
+
 A flaky test is worse than no test — it trains the team to ignore failures.
 
 Sources of flakiness, in order of frequency:

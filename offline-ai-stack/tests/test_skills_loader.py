@@ -64,6 +64,31 @@ def test_each_required_skill_file_exists(name: str):
     assert body.lstrip().startswith("# Skill:"), f"{name}.md should start with '# Skill:'"
 
 
+@pytest.mark.parametrize("name", REQUIRED_SKILLS)
+def test_each_skill_has_think_first_section(name: str):
+    """Every skill must include a `## Think first` section with at least 3 reflective prompts.
+
+    The thinking section forces deliberation before the agent applies the imperative rules.
+    See docs/SUPERPOWERS.md §5 for the authoring contract.
+    """
+    body = (SKILLS_DIR / f"{name}.md").read_text()
+    assert "## Think first" in body, f"{name}.md is missing the '## Think first' section"
+    section = body.split("## Think first", 1)[1]
+    # Stop at the next H2 or numbered list start, whichever comes first.
+    end_markers = ["\n## ", "\n1. "]
+    end_idx = min(
+        (section.find(m) for m in end_markers if section.find(m) >= 0),
+        default=len(section),
+    )
+    bullets = [
+        line for line in section[:end_idx].splitlines()
+        if line.strip().startswith("- ") and len(line.strip()) > 4
+    ]
+    assert len(bullets) >= 3, (
+        f"{name}.md '## Think first' section has only {len(bullets)} prompts; need ≥ 3"
+    )
+
+
 def test_load_concatenates_named_skills():
     out = load("brainstorming", "writing-plans")
     assert "# Skill: Brainstorming" in out
